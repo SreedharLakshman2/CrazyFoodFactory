@@ -10,37 +10,57 @@ struct FoodSelectionView: View {
             ZStack {
                 FactoryBackground(compact: true)
 
-                VStack(spacing: short ? 12 : 18) {
+                VStack(spacing: 0) {
                     HStack {
                         BackCircleButton { router.go(.home) }
                         Spacer()
                     }
-                    .padding(.horizontal, 16)
-
-                    SpeechBubble(text: "What do you want\nto make today?")
-
-                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
-                        ForEach([FoodType.pizza, .burger, .iceCream, .donut], id: \.self) { food in
-                            FoodCard(food: food) { choose(food) }
-                                .overlay(alignment: .topTrailing) {
-                                    if store.sessionCompleted.contains(food) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(GameTheme.successGreen)
-                                            .font(.title2)
-                                            .padding(10)
-                                    }
-                                }
-                        }
-                    }
                     .padding(.horizontal, 18)
+                    .padding(.top, 6)
 
-                    FoodCard(food: .sandwich, wide: true) { choose(.sandwich) }
-                        .padding(.horizontal, 18)
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: short ? 16 : 22) {
+                            SpeechBubble(text: "What do you want\nto make today?")
+                                .padding(.top, 12)
+                                .padding(.bottom, 4)
 
-                    Spacer(minLength: 8)
+                            LazyVGrid(
+                                columns: [
+                                    GridItem(.flexible(), spacing: 16),
+                                    GridItem(.flexible(), spacing: 16)
+                                ],
+                                spacing: 16
+                            ) {
+                                ForEach([FoodType.pizza, .burger, .iceCream, .donut], id: \.self) { food in
+                                    FoodCard(food: food, artSize: short ? 104 : 118) { choose(food) }
+                                        .overlay(alignment: .topTrailing) {
+                                            if store.sessionCompleted.contains(food) {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .foregroundColor(GameTheme.successGreen)
+                                                    .font(.title2)
+                                                    .padding(12)
+                                            }
+                                        }
+                                }
+                            }
+
+                            FoodCard(food: .sandwich, wide: true, artSize: short ? 112 : 128) {
+                                choose(.sandwich)
+                            }
+                            .overlay(alignment: .topTrailing) {
+                                if store.sessionCompleted.contains(.sandwich) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(GameTheme.successGreen)
+                                        .font(.title2)
+                                        .padding(12)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 28)
+                    }
                 }
                 .factoryReadableWidth()
-                .padding(.top, 8)
             }
         }
         .statusBarHidden(true)

@@ -11,12 +11,17 @@ struct HomeView: View {
             let pad = FactoryLayout.isRegular(geo.size)
             ZStack {
                 FactoryBackground()
-                FloatingFoods()
 
-                VStack(spacing: short ? 10 : 16) {
+                VStack(spacing: short ? 8 : 14) {
                     HStack {
                         SettingsButton { router.showSettings = true }
                         Spacer()
+                        CircleIconButton(
+                            systemName: "map.fill",
+                            accessibility: "Level map"
+                        ) {
+                            router.go(.levelMap)
+                        }
                         CircleIconButton(
                             systemName: store.save.musicEnabled ? "music.note" : "speaker.slash.fill",
                             accessibility: store.save.musicEnabled ? "Turn music off" : "Turn music on",
@@ -27,38 +32,28 @@ struct HomeView: View {
                     }
                     .padding(.horizontal, 18)
 
-                    Spacer(minLength: 4)
-                    titleBlock(scale: pad ? 1.18 : 1)
+                    Spacer(minLength: 2)
+
+                    titleBlock(scale: pad ? 1.2 : (short ? 0.92 : 1))
+
                     Text(Brand.tagline)
-                        .font(GameFont.caption(short ? 13 : (pad ? 18 : 15)))
-                        .foregroundColor(GameTheme.navy.opacity(0.8))
+                        .font(GameFont.caption(short ? 13 : 15))
+                        .foregroundColor(GameTheme.navy.opacity(0.75))
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 28)
-                        .padding(.bottom, 4)
-                        .zIndex(2)
+                        .padding(.horizontal, 24)
 
                     chefStage(short: short, pad: pad)
-                        .padding(.vertical, 4)
 
                     CrazyButton(title: "PLAY", icon: "play.fill") {
                         router.go(.foodSelection)
                     }
                     .factoryButtonWidth()
-                    .padding(.horizontal, 36)
-                    .padding(.bottom, 8)
-
-                    HStack(spacing: 12) {
-                        miniLink(title: "MAP", icon: "map.fill") { router.go(.levelMap) }
-                        miniLink(title: "LEVEL \(store.save.currentLevel)", icon: "star.fill") {
-                            store.startLevel(store.save.currentLevel)
-                            router.go(.foodSelection)
-                        }
-                    }
-                    .padding(.bottom, geo.safeAreaInsets.bottom > 0 ? 8 : 16)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, geo.safeAreaInsets.bottom > 0 ? 12 : 20)
                 }
                 .factoryReadableWidth()
-                .padding(.top, 8)
-                .scaleEffect(appear ? 1 : 0.92)
+                .padding(.top, 6)
+                .scaleEffect(appear ? 1 : 0.94)
                 .opacity(appear ? 1 : 0)
             }
         }
@@ -72,12 +67,18 @@ struct HomeView: View {
 
     private func titleBlock(scale: CGFloat) -> some View {
         ZStack {
-            gear(size: 34 * scale).offset(x: -118 * scale, y: -36 * scale)
-            gear(size: 26 * scale).offset(x: 112 * scale, y: -18 * scale)
-            VStack(spacing: -6 * scale) {
-                titleWord("Crazy", size: 46 * scale, colors: [Color(hex: 0xFFE14A), Color(hex: 0xFFB300)])
-                titleWord("Food", size: 50 * scale, colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A1F)])
-                titleWord("Factory", size: 46 * scale, colors: [Color(hex: 0xFF5A8A), Color(hex: 0xE53935)])
+            Image(systemName: "gearshape.fill")
+                .font(.system(size: 30 * scale, weight: .bold))
+                .foregroundColor(Color.white.opacity(0.55))
+                .offset(x: -120 * scale, y: -28 * scale)
+            Image(systemName: "gearshape.fill")
+                .font(.system(size: 22 * scale, weight: .bold))
+                .foregroundColor(Color.white.opacity(0.45))
+                .offset(x: 118 * scale, y: -8 * scale)
+            VStack(spacing: -4 * scale) {
+                titleWord("Crazy", size: 48 * scale, colors: [Color(hex: 0xFFE14A), Color(hex: 0xFFB300)])
+                titleWord("Food", size: 52 * scale, colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A1F)])
+                titleWord("Factory", size: 48 * scale, colors: [Color(hex: 0xFF5A8A), Color(hex: 0xE53935)])
             }
         }
         .accessibilityElement(children: .combine)
@@ -89,50 +90,28 @@ struct HomeView: View {
         ZStack {
             Text(text)
                 .font(GameFont.display(size))
-                .foregroundColor(Color(hex: 0x8D4E12).opacity(0.35))
+                .foregroundColor(Color(hex: 0x8D4E12).opacity(0.28))
                 .offset(y: 3)
             Text(text)
                 .font(GameFont.display(size))
                 .foregroundStyle(LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom))
-                .shadow(color: .white.opacity(0.6), radius: 0, y: 1)
         }
-    }
-
-    private func gear(size: CGFloat) -> some View {
-        Image(systemName: "gearshape.fill")
-            .font(.system(size: size, weight: .bold))
-            .foregroundColor(Color.white.opacity(0.55))
-            .accessibilityHidden(true)
     }
 
     private func chefStage(short: Bool, pad: Bool) -> some View {
-        let chef: CGFloat = pad ? 230 : (short ? 168 : 196)
-        let snack: CGFloat = pad ? 92 : 72
+        let chef: CGFloat = pad ? 280 : (short ? 210 : 250)
         return ZStack {
             ChefCharacter(pose: .idle, size: chef, showsSpatula: true)
-            FoodIllustrationView(food: .burger, placed: [.bun, .patty, .cheese, .lettuce, .topBun], size: snack)
-                .offset(x: pad ? -130 : -108, y: pad ? 70 : 58)
-            FoodIllustrationView(food: .pizza, placed: [.dough, .tomatoSauce, .cheese, .pepperoni], size: snack + 4)
-                .offset(x: pad ? 130 : 108, y: pad ? 54 : 46)
+            FoodIllustrationView(food: .pizza, size: pad ? 100 : 84)
+                .offset(x: pad ? -150 : -124, y: pad ? 70 : 54)
+            FoodIllustrationView(food: .burger, size: pad ? 92 : 78)
+                .offset(x: pad ? -150 : -122, y: pad ? 150 : 126)
+            FoodIllustrationView(food: .iceCream, size: pad ? 96 : 80)
+                .offset(x: pad ? 150 : 126, y: pad ? 16 : 6)
+            FoodIllustrationView(food: .donut, size: pad ? 90 : 76)
+                .offset(x: pad ? 150 : 128, y: pad ? 140 : 118)
         }
-        .frame(height: pad ? 320 : (short ? 236 : 276))
-        .padding(.top, 6)
-    }
-
-    private func miniLink(title: String, icon: String, action: @escaping () -> Void) -> some View {
-        Button {
-            AudioManager.shared.tap()
-            action()
-        } label: {
-            Label(title, systemImage: icon)
-                .font(GameFont.body(14))
-                .foregroundColor(GameTheme.navy)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Capsule().fill(Color.white.opacity(0.85)))
-        }
-        .buttonStyle(PressScaleStyle())
-        .accessibilityLabel(title)
+        .frame(height: pad ? 340 : (short ? 250 : 300))
     }
 }
 
@@ -140,11 +119,4 @@ struct HomeView: View {
     HomeView()
         .environmentObject(AppRouter())
         .environmentObject(GameStateStore.preview)
-}
-
-#Preview("iPad") {
-    HomeView()
-        .environmentObject(AppRouter())
-        .environmentObject(GameStateStore.preview)
-        .previewDevice("iPad Pro 13-inch (M4)")
 }

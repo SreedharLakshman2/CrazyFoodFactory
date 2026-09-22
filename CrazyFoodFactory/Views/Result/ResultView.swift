@@ -11,24 +11,21 @@ struct ResultView: View {
                 GameTheme.resultGradient.ignoresSafeArea()
                 ConfettiView()
 
-                VStack(spacing: short ? 12 : 18) {
-                    Text(store.currentResult?.title ?? "Yummy!")
-                        .font(GameFont.display(short ? 34 : 40))
-                        .foregroundColor(GameTheme.navy)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.7)
-                        .padding(.top, 12)
-
-                    StarRating(filled: store.currentResult?.stars ?? 3, size: 34)
+                VStack(spacing: short ? 14 : 20) {
+                    RibbonTitle(text: store.currentResult?.title ?? "Yummy!")
+                        .padding(.top, 16)
 
                     if let result = store.currentResult {
-                        FoodIllustrationView(food: result.food, placed: result.placed, size: short ? 170 : 200, cuteFace: result.food == .burger)
-                            .bounceOn(true)
-                        Text(result.message)
-                            .font(GameFont.headline(18))
-                            .foregroundColor(GameTheme.navy.opacity(0.8))
+                        FoodIllustrationView(
+                            food: result.food,
+                            placed: result.placed,
+                            size: short ? 220 : 250,
+                            cuteFace: result.food == .burger
+                        )
+                        .bounceOn(true)
+
                         ResultCard(result: result)
-                            .padding(.horizontal, 28)
+                            .padding(.horizontal, 32)
                     }
 
                     Spacer(minLength: 8)
@@ -37,17 +34,12 @@ struct ResultView: View {
                         advance()
                     }
                     .factoryButtonWidth()
-                    .padding(.horizontal, 28)
+                    .padding(.horizontal, 32)
 
-                    Button {
-                        AudioManager.shared.tap()
+                    HomeCircleButton {
                         router.go(.home)
-                    } label: {
-                        Label("HOME", systemImage: "house.fill")
-                            .font(GameFont.headline(16))
-                            .foregroundColor(GameTheme.navy)
                     }
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 12)
                 }
                 .factoryReadableWidth()
             }

@@ -11,42 +11,35 @@ struct LevelCompleteView: View {
                 GameTheme.celebrateGradient.ignoresSafeArea()
                 ConfettiView()
 
-                VStack(spacing: short ? 12 : 18) {
+                VStack(spacing: short ? 14 : 20) {
                     Text("LEVEL\nCOMPLETE!")
-                        .font(GameFont.display(short ? 36 : 42))
+                        .font(GameFont.display(short ? 38 : 44))
                         .foregroundColor(GameTheme.navy)
                         .multilineTextAlignment(.center)
-                        .padding(.top, 8)
+                        .padding(.top, 10)
 
-                    StarRating(filled: store.save.stars(for: max(1, store.save.currentLevel - 1)), size: 40)
-                        .padding(.top, 4)
+                    StarRating(filled: max(store.save.stars(for: max(1, store.save.currentLevel - 1)), store.currentResult?.stars ?? 0), size: 42)
 
                     Text("You made:")
                         .font(GameFont.headline(18))
                         .foregroundColor(GameTheme.navy.opacity(0.75))
 
                     foodRow
+                        .padding(.horizontal, 28)
 
-                    ChefCharacter(pose: .celebrating, size: short ? 120 : 140)
-
-                    Spacer(minLength: 6)
+                    Spacer(minLength: 8)
 
                     CrazyButton(title: "NEXT LEVEL", icon: "arrow.right", kind: .next) {
                         store.startLevel(store.save.currentLevel)
                         router.go(.levelMap)
                     }
                     .factoryButtonWidth()
-                    .padding(.horizontal, 28)
+                    .padding(.horizontal, 32)
 
-                    Button {
-                        AudioManager.shared.tap()
+                    HomeCircleButton {
                         router.go(.home)
-                    } label: {
-                        Label("HOME", systemImage: "house.fill")
-                            .font(GameFont.headline(16))
-                            .foregroundColor(GameTheme.navy)
                     }
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 12)
                 }
                 .factoryReadableWidth()
             }
@@ -57,17 +50,24 @@ struct LevelCompleteView: View {
 
     private var foodRow: some View {
         let foods = store.sessionCompleted.isEmpty ? store.currentLevel.requiredFoods : store.sessionCompleted
-        return HStack(spacing: 14) {
+        return HStack(spacing: 16) {
             ForEach(foods, id: \.self) { food in
-                VStack(spacing: 4) {
-                    FoodIllustrationView(food: food, size: 52)
+                VStack(spacing: 6) {
+                    FoodIllustrationView(food: food, size: 72)
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(GameTheme.successGreen)
+                        .font(.system(size: 18, weight: .bold))
                 }
             }
         }
-        .padding(14)
-        .background(RoundedRectangle(cornerRadius: 24, style: .continuous).fill(Color.white.opacity(0.85)))
+        .padding(.horizontal, 22)
+        .padding(.vertical, 16)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color.white.opacity(0.92))
+        )
+        .softCardShadow(0.08)
     }
 }
 

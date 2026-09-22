@@ -75,7 +75,7 @@ enum FoodCatalog {
             showsOven: false,
             ovenIsTrap: false,
             strictOrder: true,
-            checklist: [.bun, .patty, .cheese, .lettuce]
+            checklist: [.bun, .patty, .lettuce, .cheese]
         )
     }
 

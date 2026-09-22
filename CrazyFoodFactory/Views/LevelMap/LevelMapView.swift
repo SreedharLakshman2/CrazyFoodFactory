@@ -14,14 +14,21 @@ struct LevelMapView: View {
                     ScrollView(showsIndicators: false) {
                         let mapSize = CGSize(
                             width: FactoryLayout.contentWidth(in: geo.size),
-                            height: max(640, geo.size.height * 0.92)
+                            height: max(680, geo.size.height * 0.88)
                         )
                         ZStack {
                             path(in: mapSize)
                             nodes(in: mapSize)
+                            VStack {
+                                Spacer()
+                                Text("FOOD\nFACTORY")
+                                    .font(GameFont.headline(16))
+                                    .foregroundColor(GameTheme.navy.opacity(0.7))
+                                    .multilineTextAlignment(.center)
+                                    .padding(.bottom, 18)
+                            }
                         }
                         .frame(width: mapSize.width, height: mapSize.height)
-                        .padding(.bottom, 24)
                     }
                     .factoryReadableWidth()
                 }
@@ -34,11 +41,6 @@ struct LevelMapView: View {
         HStack {
             BackCircleButton { router.go(.home) }
             Spacer()
-            Text("FOOD\nFACTORY")
-                .font(GameFont.headline(14))
-                .foregroundColor(GameTheme.navy)
-                .multilineTextAlignment(.center)
-            Spacer()
             HStack(spacing: 6) {
                 Image(systemName: "star.fill")
                     .foregroundColor(GameTheme.primaryYellow)
@@ -46,26 +48,30 @@ struct LevelMapView: View {
                     .font(GameFont.headline(16))
                     .foregroundColor(GameTheme.navy)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
             .background(Capsule().fill(Color.white))
-            SettingsButton { router.showSettings = true }
+            .shadow(color: Color.black.opacity(0.08), radius: 6, y: 3)
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, 16)
         .padding(.top, 8)
         .factoryReadableWidth()
     }
 
     private func path(in size: CGSize) -> some View {
-        Path { p in
-            let pts = nodePoints(in: size)
+        let pts = nodePoints(in: size)
+        return Path { p in
             guard let first = pts.first else { return }
             p.move(to: first)
-            for pt in pts.dropFirst() {
-                p.addLine(to: pt)
+            for index in 1..<pts.count {
+                let previous = pts[index - 1]
+                let current = pts[index]
+                let mid = CGPoint(x: (previous.x + current.x) / 2, y: (previous.y + current.y) / 2)
+                let sway: CGFloat = index.isMultiple(of: 2) ? 36 : -36
+                p.addQuadCurve(to: current, control: CGPoint(x: mid.x + sway, y: mid.y))
             }
         }
-        .stroke(Color.white.opacity(0.85), style: StrokeStyle(lineWidth: 8, lineCap: .round, dash: [10, 12]))
+        .stroke(Color.white.opacity(0.92), style: StrokeStyle(lineWidth: 10, lineCap: .round, dash: [14, 14]))
         .allowsHitTesting(false)
     }
 
@@ -90,10 +96,10 @@ struct LevelMapView: View {
     }
 
     private func nodePoints(in size: CGSize) -> [CGPoint] {
-        let w = size.width
-        let xs: [CGFloat] = [0.28, 0.70, 0.32, 0.74, 0.30, 0.68, 0.34, 0.72, 0.30, 0.66]
-        return (0..<LevelCatalog.levelCount).map { i in
-            CGPoint(x: w * xs[i], y: 70 + CGFloat(i) * 62)
+        let width = size.width
+        let xs: [CGFloat] = [0.30, 0.70, 0.28, 0.72, 0.32, 0.68, 0.30, 0.74, 0.28, 0.66]
+        return (0..<LevelCatalog.levelCount).map { index in
+            CGPoint(x: width * xs[index], y: 70 + CGFloat(index) * 58)
         }
     }
 }

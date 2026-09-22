@@ -123,7 +123,7 @@ struct ChaosEvent: Identifiable, Equatable {
 
     static let penguinVisit = ChaosEvent(
         type: .penguinVisit,
-        title: "OOPS! A LITTLE CHAOS!",
+        title: "Oops! A little chaos!",
         subtitle: "A penguin joined the factory!",
         severity: .oops,
         retry: .continuePlay

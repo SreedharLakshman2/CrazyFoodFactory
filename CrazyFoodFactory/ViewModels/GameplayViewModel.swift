@@ -198,6 +198,9 @@ final class GameplayViewModel: ObservableObject {
                 if next.isOven {
                     phase = .readyToCook
                     chefPose = .thumbsUp
+                    if !definition.ovenIsTrap {
+                        startCooking()
+                    }
                 }
             } else {
                 completeFood()

@@ -42,10 +42,10 @@ enum FoodType: String, Codable, CaseIterable, Identifiable, Hashable {
     var cardColor: Color {
         switch self {
         case .pizza: return Color.white
-        case .burger: return Color(hex: 0xFFE9A0)
-        case .iceCream: return Color(hex: 0xE7D4FF)
-        case .donut: return Color(hex: 0xFFD0EA)
-        case .sandwich: return Color(hex: 0xC8F5C4)
+        case .burger: return Color(hex: 0xFFE7A8)
+        case .iceCream: return Color(hex: 0xE8D6FF)
+        case .donut: return Color(hex: 0xFFD2EC)
+        case .sandwich: return Color(hex: 0xC4F5C0)
         }
     }
 

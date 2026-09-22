@@ -131,11 +131,11 @@ struct SpeechBubble: View {
 
     var body: some View {
         Text(text)
-            .font(GameFont.headline(compact ? 16 : 18))
+            .font(GameFont.headline(compact ? 17 : 23))
             .foregroundColor(GameTheme.navy)
             .multilineTextAlignment(.center)
-            .padding(.horizontal, compact ? 14 : 18)
-            .padding(.vertical, compact ? 10 : 14)
+            .padding(.horizontal, compact ? 16 : 22)
+            .padding(.vertical, compact ? 11 : 16)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(Color.white)
@@ -201,6 +201,7 @@ struct ProgressStars: View {
 struct FoodCard: View {
     let food: FoodType
     var wide: Bool = false
+    var artSize: CGFloat = 112
     var action: () -> Void
 
     var body: some View {
@@ -209,25 +210,25 @@ struct FoodCard: View {
             Haptics.light()
             action()
         } label: {
-            VStack(spacing: 8) {
-                FoodIllustrationView(food: food, size: wide ? 86 : 78)
+            VStack(spacing: 12) {
+                FoodIllustrationView(food: food, size: artSize)
                 Text(food.displayName)
-                    .font(GameFont.headline(16))
+                    .font(GameFont.headline(18))
                     .foregroundColor(GameTheme.navy)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, wide ? 14 : 16)
+            .padding(.vertical, wide ? 20 : 22)
             .background(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                RoundedRectangle(cornerRadius: 32, style: .continuous)
                     .fill(
-                        LinearGradient(colors: [food.cardColor, food.cardColor.opacity(0.86)], startPoint: .top, endPoint: .bottom)
+                        LinearGradient(colors: [food.cardColor, food.cardColor.opacity(0.88)], startPoint: .top, endPoint: .bottom)
                     )
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.white.opacity(0.85), lineWidth: 3)
+                RoundedRectangle(cornerRadius: 32, style: .continuous)
+                    .stroke(Color.white.opacity(0.92), lineWidth: 3)
             )
-            .shadow(color: Color.black.opacity(0.1), radius: 10, y: 6)
+            .shadow(color: Color.black.opacity(0.1), radius: 12, y: 7)
         }
         .buttonStyle(PressScaleStyle())
         .accessibilityLabel(food.displayName)
@@ -243,18 +244,16 @@ struct IngredientCard: View {
         Button(action: action) {
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(colors: [ingredient.trayColor, ingredient.trayColor.opacity(0.75)], startPoint: .top, endPoint: .bottom)
-                    )
-                    .overlay(Circle().stroke(Color.white, lineWidth: 3))
-                    .shadow(color: Color.black.opacity(0.12), radius: 5, y: 3)
+                    .fill(Color.white)
+                    .overlay(Circle().stroke(Color.white.opacity(0.95), lineWidth: 3))
+                    .shadow(color: Color.black.opacity(0.1), radius: 6, y: 3)
                 IngredientArt(id: ingredient.id)
-                    .padding(10)
+                    .padding(8)
                 if used {
-                    Circle().fill(Color.white.opacity(0.35))
+                    Circle().fill(Color.white.opacity(0.4))
                 }
             }
-            .frame(width: 62, height: 62)
+            .frame(width: 74, height: 74)
             .opacity(used && !ingredient.isOptional ? 0.55 : 1)
         }
         .buttonStyle(PressScaleStyle())
@@ -268,26 +267,37 @@ struct IngredientTray: View {
     var onTap: (IngredientID) -> Void
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                ForEach(ingredients) { item in
-                    IngredientCard(
-                        ingredient: item,
-                        used: placed.contains(item.id) && !item.isOptional && !item.isChaosBait
-                    ) {
-                        onTap(item.id)
+        Group {
+            if ingredients.count <= 6 {
+                HStack(spacing: 10) {
+                    ForEach(ingredients) { item in
+                        ingredientButton(item)
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(ingredients) { item in
+                            ingredientButton(item)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
         }
-        .background(
-            Capsule()
-                .fill(Color.white.opacity(0.22))
-                .padding(.horizontal, 8)
-        )
         .accessibilityElement(children: .contain)
+    }
+
+    private func ingredientButton(_ item: Ingredient) -> some View {
+        IngredientCard(
+            ingredient: item,
+            used: placed.contains(item.id) && !item.isOptional && !item.isChaosBait
+        ) {
+            onTap(item.id)
+        }
     }
 }
 
@@ -380,11 +390,11 @@ struct LevelNode: View {
                 ZStack {
                     Circle()
                         .fill(unlocked ? Color.white : GameTheme.lockBlue.opacity(0.55))
-                        .frame(width: 72, height: 72)
+                        .frame(width: 80, height: 80)
                         .overlay(Circle().stroke(unlocked ? level.nodeFood.accent : Color.white.opacity(0.4), lineWidth: 4))
                         .shadow(color: Color.black.opacity(unlocked ? 0.12 : 0.05), radius: 6, y: 4)
                     if unlocked {
-                        FoodIllustrationView(food: level.nodeFood, size: 42)
+                        FoodIllustrationView(food: level.nodeFood, size: 48)
                     } else {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 22, weight: .bold))
@@ -435,8 +445,138 @@ struct ResultCard: View {
     }
 
     private var checklist: [IngredientID] {
+        let defined = FoodCatalog.definition(for: result.food, level: LevelCatalog.level(1)).checklist
+            .filter { $0 != .dough && $0 != .donutBase }
+        if !defined.isEmpty { return Array(defined.prefix(4)) }
         let fallback = result.placed.filter { $0 != .dough && $0 != .donutBase }
         return Array((fallback.isEmpty ? result.placed : fallback).prefix(4))
+    }
+}
+
+struct RibbonTitle: View {
+    var text: String
+
+    var body: some View {
+        ZStack {
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: [Color(hex: 0xFFE56A), Color(hex: 0xFFC93A)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .frame(height: 26)
+                .padding(.horizontal, 18)
+                .offset(y: 6)
+                .overlay(alignment: .leading) {
+                    Circle().fill(Color(hex: 0xFFC93A)).frame(width: 16, height: 16).offset(x: 10, y: 6)
+                }
+                .overlay(alignment: .trailing) {
+                    Circle().fill(Color(hex: 0xFFC93A)).frame(width: 16, height: 16).offset(x: -10, y: 6)
+                }
+            Text(text)
+                .font(GameFont.display(36))
+                .foregroundColor(GameTheme.navy)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.7)
+                .shadow(color: Color.white.opacity(0.7), radius: 0, y: 1)
+        }
+        .padding(.horizontal, 12)
+        .accessibilityAddTraits(.isHeader)
+    }
+}
+
+struct HomeCircleButton: View {
+    var action: () -> Void
+    var body: some View {
+        CircleIconButton(systemName: "house.fill", accessibility: "Home", action: action)
+    }
+}
+
+struct WarningBanner: View {
+    var text: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(Color(hex: 0xFFC107))
+            Text(text)
+                .font(GameFont.headline(18))
+                .foregroundColor(GameTheme.navy)
+                .multilineTextAlignment(.leading)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white)
+        )
+        .shadow(color: Color.black.opacity(0.1), radius: 8, y: 4)
+    }
+}
+
+struct FactoryTable: View {
+    var body: some View {
+        Ellipse()
+            .fill(Color.white.opacity(0.96))
+            .overlay(
+                Ellipse()
+                    .stroke(Color.white, lineWidth: 3)
+            )
+            .shadow(color: Color.black.opacity(0.1), radius: 16, y: 8)
+            .accessibilityHidden(true)
+    }
+}
+
+struct FrostingPipe: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: [Color(hex: 0xD5DCE4), Color(hex: 0xB7C0CB)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(width: 20, height: 44)
+            Capsule()
+                .fill(Color(hex: 0xA9B3BF))
+                .frame(width: 40, height: 22)
+                .overlay(
+                    Capsule()
+                        .fill(Color(hex: 0xFF8AD4))
+                        .frame(width: 12, height: 10)
+                        .offset(y: 6)
+                )
+        }
+        .shadow(color: Color.black.opacity(0.12), radius: 6, y: 3)
+        .accessibilityHidden(true)
+    }
+}
+
+struct FactoryArm: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 0) {
+            Spacer()
+            VStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color(hex: 0x8A97A8))
+                    .frame(width: 86, height: 22)
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(Color(hex: 0xE53935))
+                    .frame(width: 20, height: 54)
+                HStack(spacing: 4) {
+                    Capsule().fill(Color(hex: 0x8A97A8)).frame(width: 10, height: 28)
+                    Capsule().fill(Color(hex: 0x8A97A8)).frame(width: 10, height: 28)
+                }
+            }
+            .padding(.trailing, 28)
+        }
+        .frame(height: 110)
+        .accessibilityHidden(true)
     }
 }
 
