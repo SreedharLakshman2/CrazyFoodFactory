@@ -12,6 +12,7 @@ struct CrazyFoodFactoryApp: App {
                 .environmentObject(router)
                 .dynamicTypeSize(.medium ... .accessibility3)
                 .persistentSystemOverlays(.hidden)
+                .statusBarHidden(true)
         }
     }
 }

@@ -12,13 +12,18 @@ struct LevelMapView: View {
                 VStack(spacing: 0) {
                     header
                     ScrollView(showsIndicators: false) {
+                        let mapSize = CGSize(
+                            width: FactoryLayout.contentWidth(in: geo.size),
+                            height: max(640, geo.size.height * 0.92)
+                        )
                         ZStack {
-                            path(in: geo.size)
-                            nodes(in: geo.size)
+                            path(in: mapSize)
+                            nodes(in: mapSize)
                         }
-                        .frame(height: max(640, geo.size.height * 0.92))
+                        .frame(width: mapSize.width, height: mapSize.height)
                         .padding(.bottom, 24)
                     }
+                    .factoryReadableWidth()
                 }
             }
         }
@@ -48,6 +53,7 @@ struct LevelMapView: View {
         }
         .padding(.horizontal, 14)
         .padding(.top, 8)
+        .factoryReadableWidth()
     }
 
     private func path(in size: CGSize) -> some View {

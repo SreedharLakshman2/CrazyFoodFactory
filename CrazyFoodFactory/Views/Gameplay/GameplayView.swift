@@ -14,6 +14,7 @@ struct GameplayView: View {
     var body: some View {
         GeometryReader { geo in
             let short = geo.size.height < 720
+            let playWidth = FactoryLayout.contentWidth(in: geo.size)
             ZStack {
                 FactoryBackground(compact: true)
 
@@ -24,12 +25,13 @@ struct GameplayView: View {
                         placed: game.placed,
                         onTap: game.tapIngredient
                     )
-                    workstation(short: short, width: geo.size.width)
+                    workstation(short: short, width: playWidth)
                     if game.definition.showsOven {
                         ovenRow
                     }
                     Spacer(minLength: 4)
                 }
+                .factoryReadableWidth()
                 .padding(.top, 6)
                 .modifier(ShakeEffect(animatableData: game.shake))
 
@@ -101,7 +103,7 @@ struct GameplayView: View {
         ZStack {
             RoundedRectangle(cornerRadius: 36, style: .continuous)
                 .fill(Color.white.opacity(0.92))
-                .frame(height: short ? 300 : 340)
+                .frame(height: short ? 300 : (width > 500 ? 400 : 340))
                 .padding(.horizontal, 16)
                 .softCardShadow(0.1)
 

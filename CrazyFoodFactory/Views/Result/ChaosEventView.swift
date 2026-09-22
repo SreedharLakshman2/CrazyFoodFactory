@@ -43,6 +43,7 @@ struct ChaosEventView: View {
 
                 if event.retry == .keepOrRetry {
                     CrazyButton(title: "KEEP IT CRAZY", icon: "sparkles", kind: .play, action: keep)
+                        .factoryButtonWidth()
                         .padding(.horizontal, 28)
                 }
                 CrazyButton(
@@ -51,9 +52,11 @@ struct ChaosEventView: View {
                     kind: event.retry == .retryOnly ? .play : .retry,
                     action: retry
                 )
+                .factoryButtonWidth()
                 .padding(.horizontal, 28)
                 .padding(.bottom, 12)
             }
+            .factoryReadableWidth()
             .padding(.top, 24)
         }
     }

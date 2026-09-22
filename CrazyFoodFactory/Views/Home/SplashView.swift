@@ -32,6 +32,7 @@ struct SplashView: View {
                     .opacity(burst ? 1 : 0)
                 Spacer()
             }
+            .factoryReadableWidth()
         }
         .onAppear {
             withAnimation(.spring(response: 0.7, dampingFraction: 0.7)) {

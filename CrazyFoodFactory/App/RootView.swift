@@ -41,6 +41,8 @@ struct RootView: View {
         .sheet(isPresented: $router.showSettings) {
             SettingsView()
                 .environmentObject(store)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
         .preferredColorScheme(.light)
         .statusBarHidden(true)

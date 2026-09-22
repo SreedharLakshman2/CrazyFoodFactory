@@ -8,6 +8,7 @@ struct HomeView: View {
     var body: some View {
         GeometryReader { geo in
             let short = geo.size.height < 720
+            let pad = FactoryLayout.isRegular(geo.size)
             ZStack {
                 FactoryBackground()
                 FloatingFoods()
@@ -27,21 +28,22 @@ struct HomeView: View {
                     .padding(.horizontal, 18)
 
                     Spacer(minLength: 4)
-                    titleBlock
+                    titleBlock(scale: pad ? 1.18 : 1)
                     Text(Brand.tagline)
-                        .font(GameFont.caption(short ? 13 : 15))
+                        .font(GameFont.caption(short ? 13 : (pad ? 18 : 15)))
                         .foregroundColor(GameTheme.navy.opacity(0.8))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 28)
                         .padding(.bottom, 4)
                         .zIndex(2)
 
-                    chefStage(short: short)
+                    chefStage(short: short, pad: pad)
                         .padding(.vertical, 4)
 
                     CrazyButton(title: "PLAY", icon: "play.fill") {
                         router.go(.foodSelection)
                     }
+                    .factoryButtonWidth()
                     .padding(.horizontal, 36)
                     .padding(.bottom, 8)
 
@@ -54,6 +56,7 @@ struct HomeView: View {
                     }
                     .padding(.bottom, geo.safeAreaInsets.bottom > 0 ? 8 : 16)
                 }
+                .factoryReadableWidth()
                 .padding(.top, 8)
                 .scaleEffect(appear ? 1 : 0.92)
                 .opacity(appear ? 1 : 0)
@@ -67,14 +70,14 @@ struct HomeView: View {
         }
     }
 
-    private var titleBlock: some View {
+    private func titleBlock(scale: CGFloat) -> some View {
         ZStack {
-            gear(size: 34).offset(x: -118, y: -36)
-            gear(size: 26).offset(x: 112, y: -18)
-            VStack(spacing: -6) {
-                titleWord("Crazy", size: 46, colors: [Color(hex: 0xFFE14A), Color(hex: 0xFFB300)])
-                titleWord("Food", size: 50, colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A1F)])
-                titleWord("Factory", size: 46, colors: [Color(hex: 0xFF5A8A), Color(hex: 0xE53935)])
+            gear(size: 34 * scale).offset(x: -118 * scale, y: -36 * scale)
+            gear(size: 26 * scale).offset(x: 112 * scale, y: -18 * scale)
+            VStack(spacing: -6 * scale) {
+                titleWord("Crazy", size: 46 * scale, colors: [Color(hex: 0xFFE14A), Color(hex: 0xFFB300)])
+                titleWord("Food", size: 50 * scale, colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A1F)])
+                titleWord("Factory", size: 46 * scale, colors: [Color(hex: 0xFF5A8A), Color(hex: 0xE53935)])
             }
         }
         .accessibilityElement(children: .combine)
@@ -102,15 +105,17 @@ struct HomeView: View {
             .accessibilityHidden(true)
     }
 
-    private func chefStage(short: Bool) -> some View {
-        ZStack {
-            ChefCharacter(pose: .idle, size: short ? 168 : 196, showsSpatula: true)
-            FoodIllustrationView(food: .burger, placed: [.bun, .patty, .cheese, .lettuce, .topBun], size: 72)
-                .offset(x: -108, y: 58)
-            FoodIllustrationView(food: .pizza, placed: [.dough, .tomatoSauce, .cheese, .pepperoni], size: 76)
-                .offset(x: 108, y: 46)
+    private func chefStage(short: Bool, pad: Bool) -> some View {
+        let chef: CGFloat = pad ? 230 : (short ? 168 : 196)
+        let snack: CGFloat = pad ? 92 : 72
+        return ZStack {
+            ChefCharacter(pose: .idle, size: chef, showsSpatula: true)
+            FoodIllustrationView(food: .burger, placed: [.bun, .patty, .cheese, .lettuce, .topBun], size: snack)
+                .offset(x: pad ? -130 : -108, y: pad ? 70 : 58)
+            FoodIllustrationView(food: .pizza, placed: [.dough, .tomatoSauce, .cheese, .pepperoni], size: snack + 4)
+                .offset(x: pad ? 130 : 108, y: pad ? 54 : 46)
         }
-        .frame(height: short ? 236 : 276)
+        .frame(height: pad ? 320 : (short ? 236 : 276))
         .padding(.top, 6)
     }
 
@@ -131,8 +136,15 @@ struct HomeView: View {
     }
 }
 
-#Preview {
+#Preview("iPhone") {
     HomeView()
         .environmentObject(AppRouter())
         .environmentObject(GameStateStore.preview)
+}
+
+#Preview("iPad") {
+    HomeView()
+        .environmentObject(AppRouter())
+        .environmentObject(GameStateStore.preview)
+        .previewDevice("iPad Pro 13-inch (M4)")
 }

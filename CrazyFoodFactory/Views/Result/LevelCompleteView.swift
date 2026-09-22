@@ -35,6 +35,7 @@ struct LevelCompleteView: View {
                         store.startLevel(store.save.currentLevel)
                         router.go(.levelMap)
                     }
+                    .factoryButtonWidth()
                     .padding(.horizontal, 28)
 
                     Button {
@@ -47,6 +48,7 @@ struct LevelCompleteView: View {
                     }
                     .padding(.bottom, 10)
                 }
+                .factoryReadableWidth()
             }
         }
         .statusBarHidden(true)

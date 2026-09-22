@@ -39,6 +39,7 @@ struct FoodSelectionView: View {
 
                     Spacer(minLength: 8)
                 }
+                .factoryReadableWidth()
                 .padding(.top, 8)
             }
         }

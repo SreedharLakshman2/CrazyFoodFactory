@@ -21,6 +21,7 @@ struct PauseOverlay: View {
                 RoundedRectangle(cornerRadius: 32, style: .continuous)
                     .fill(Color.white)
             )
+            .frame(maxWidth: FactoryLayout.overlayMaxWidth)
             .padding(28)
             .softCardShadow()
         }

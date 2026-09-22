@@ -64,6 +64,7 @@ struct SettingsView: View {
 
                 Spacer()
             }
+            .factoryReadableWidth()
             .padding(.top, 10)
         }
         .alert("Reset all stars and levels?", isPresented: $confirmReset) {

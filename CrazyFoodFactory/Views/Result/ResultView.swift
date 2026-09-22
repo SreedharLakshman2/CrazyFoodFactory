@@ -36,6 +36,7 @@ struct ResultView: View {
                     CrazyButton(title: "NEXT ORDER", icon: "arrow.right", kind: .next) {
                         advance()
                     }
+                    .factoryButtonWidth()
                     .padding(.horizontal, 28)
 
                     Button {
@@ -48,6 +49,7 @@ struct ResultView: View {
                     }
                     .padding(.bottom, 10)
                 }
+                .factoryReadableWidth()
             }
         }
         .statusBarHidden(true)
