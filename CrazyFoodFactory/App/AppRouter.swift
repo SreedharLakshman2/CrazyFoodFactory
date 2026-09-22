@@ -1,0 +1,29 @@
+import SwiftUI
+
+enum AppScreen: Equatable {
+    case splash
+    case home
+    case foodSelection
+    case gameplay
+    case chaos
+    case result
+    case levelComplete
+    case levelMap
+    case settings
+}
+
+@MainActor
+final class AppRouter: ObservableObject {
+    @Published var screen: AppScreen = .home
+    @Published var showSettings = false
+    @Published var showPause = false
+
+    func go(_ next: AppScreen) {
+        withAnimation(.spring(response: 0.46, dampingFraction: 0.84)) {
+            screen = next
+            if next != .gameplay {
+                showPause = false
+            }
+        }
+    }
+}
