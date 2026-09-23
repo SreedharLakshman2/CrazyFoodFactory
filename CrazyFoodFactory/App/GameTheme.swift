@@ -4,8 +4,8 @@ enum GameTheme {
     static let factoryBlue = Color(hex: 0x4EC3FF)
     static let factoryMidBlue = Color(hex: 0x7AD4FF)
     static let factoryLightBlue = Color(hex: 0xC8F0FF)
-    static let factorySkyTop = Color(hex: 0x3BB6FF)
-    static let factorySkyBottom = Color(hex: 0xE7F8FF)
+    static let factorySkyTop = Color(hex: 0x2EB0FF)
+    static let factorySkyBottom = Color(hex: 0xFFE9F4)
     static let primaryYellow = Color(hex: 0xFFD23F)
     static let orange = Color(hex: 0xFF9A3C)
     static let pizzaRed = Color(hex: 0xFF5A4E)
@@ -36,17 +36,17 @@ enum GameTheme {
         endPoint: .bottom
     )
     static let skyGradient = LinearGradient(
-        colors: [factorySkyTop, factoryMidBlue, factorySkyBottom],
+        colors: [factorySkyTop, Color(hex: 0x7AD8FF), Color(hex: 0xFFE7A8), factorySkyBottom],
         startPoint: .top,
         endPoint: .bottom
     )
     static let resultGradient = LinearGradient(
-        colors: [Color(hex: 0x7AD4FF), Color(hex: 0xB8ECFF), Color.white],
+        colors: [Color(hex: 0x7AD4FF), Color(hex: 0xFFE7A8), Color(hex: 0xFFD0F0)],
         startPoint: .top,
         endPoint: .bottom
     )
     static let celebrateGradient = LinearGradient(
-        colors: [Color(hex: 0x5CC8FF), Color(hex: 0xFFE14A).opacity(0.35), Color.white],
+        colors: [Color(hex: 0x5CC8FF), Color(hex: 0xFFE14A), Color(hex: 0xFFB6E8)],
         startPoint: .top,
         endPoint: .bottom
     )

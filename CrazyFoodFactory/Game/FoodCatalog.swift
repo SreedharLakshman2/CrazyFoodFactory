@@ -9,6 +9,10 @@ enum FoodCatalog {
         case .iceCream: return iceCream(extra: extra)
         case .donut: return donut(extra: extra)
         case .sandwich: return sandwich(extra: extra)
+        case .taco: return taco(extra: extra)
+        case .pasta: return pasta(extra: extra)
+        case .cupcake: return cupcake(extra: extra)
+        case .hotDog: return hotDog(extra: extra)
         }
     }
 
@@ -171,6 +175,120 @@ enum FoodCatalog {
             ovenIsTrap: false,
             strictOrder: true,
             checklist: [.bread, .lettuce, .tomato, .cheese]
+        )
+    }
+
+    private static func taco(extra: Bool) -> FoodGameDefinition {
+        var tray: [Ingredient] = [
+            Ingredient(id: .tortilla),
+            Ingredient(id: .lettuce),
+            Ingredient(id: .tacoBeef),
+            Ingredient(id: .cheese),
+            Ingredient(id: .salsa)
+        ]
+        if extra { tray.append(Ingredient(id: .avocado, isOptional: true)) }
+        return FoodGameDefinition(
+            id: .taco,
+            type: .taco,
+            title: FoodType.taco.taskTitle,
+            ingredients: tray,
+            steps: [
+                GameStep(id: "shell", accepted: [.tortilla], hint: "Start with a shell!"),
+                GameStep(id: "beef", accepted: [.tacoBeef], hint: "Add the beef!"),
+                GameStep(id: "veg", accepted: extra ? [.lettuce, .avocado] : [.lettuce], hint: "Green and crunchy!"),
+                GameStep(id: "top", accepted: [.cheese, .salsa], minCount: 1, hint: "Cheese or salsa!")
+            ],
+            prePlaced: [],
+            showsOven: false,
+            ovenIsTrap: false,
+            strictOrder: true,
+            checklist: [.tortilla, .tacoBeef, .lettuce, .cheese]
+        )
+    }
+
+    private static func pasta(extra: Bool) -> FoodGameDefinition {
+        FoodGameDefinition(
+            id: .pasta,
+            type: .pasta,
+            title: FoodType.pasta.taskTitle,
+            ingredients: [
+                Ingredient(id: .noodles),
+                Ingredient(id: .tomatoSauce),
+                Ingredient(id: .meatball),
+                Ingredient(id: .cheese),
+                Ingredient(id: .basil, isOptional: true)
+            ],
+            steps: [
+                GameStep(id: "noodles", accepted: [.noodles], hint: "Noodles first!"),
+                GameStep(id: "sauce", accepted: [.tomatoSauce], hint: "Sauce splash!"),
+                GameStep(id: "meat", accepted: extra ? [.meatball, .cheese] : [.meatball], hint: "Add a meatball!"),
+                GameStep(id: "herb", accepted: [.basil, .cheese], minCount: 1, hint: "Cheesy finish!")
+            ],
+            prePlaced: [],
+            showsOven: false,
+            ovenIsTrap: false,
+            strictOrder: true,
+            checklist: [.noodles, .tomatoSauce, .meatball, .cheese]
+        )
+    }
+
+    private static func cupcake(extra: Bool) -> FoodGameDefinition {
+        FoodGameDefinition(
+            id: .cupcake,
+            type: .cupcake,
+            title: FoodType.cupcake.taskTitle,
+            ingredients: [
+                Ingredient(id: .cupcakeBase),
+                Ingredient(id: .cupcakeFrosting),
+                Ingredient(id: .sprinkles),
+                Ingredient(id: .cherry),
+                Ingredient(id: .candle, isOptional: true)
+            ],
+            steps: [
+                GameStep(id: "cake", accepted: [.cupcakeBase], hint: "Little cake first!"),
+                GameStep(id: "frost", accepted: [.cupcakeFrosting], hint: "Swirl the frosting!"),
+                GameStep(
+                    id: "top",
+                    accepted: extra ? [.sprinkles, .cherry, .candle] : [.sprinkles, .cherry],
+                    minCount: extra ? 2 : 1,
+                    hint: "Make it sparkle!"
+                )
+            ],
+            prePlaced: [],
+            showsOven: false,
+            ovenIsTrap: false,
+            strictOrder: true,
+            checklist: [.cupcakeBase, .cupcakeFrosting, .sprinkles]
+        )
+    }
+
+    private static func hotDog(extra: Bool) -> FoodGameDefinition {
+        FoodGameDefinition(
+            id: .hotDog,
+            type: .hotDog,
+            title: FoodType.hotDog.taskTitle,
+            ingredients: [
+                Ingredient(id: .hotdogBun),
+                Ingredient(id: .sausage),
+                Ingredient(id: .mustard),
+                Ingredient(id: .ketchup),
+                Ingredient(id: .onion, isOptional: extra)
+            ],
+            steps: [
+                GameStep(id: "bun", accepted: [.hotdogBun], hint: "Open the bun!"),
+                GameStep(id: "dog", accepted: [.sausage], hint: "Dog in the bun!"),
+                GameStep(
+                    id: "sauce",
+                    accepted: extra ? [.mustard, .ketchup, .onion] : [.mustard, .ketchup],
+                    minCount: 1,
+                    hint: "Squiggle a sauce!"
+                )
+            ],
+            prePlaced: [],
+            showsOven: false,
+            ovenIsTrap: false,
+            strictOrder: true,
+            checklist: [.hotdogBun, .sausage, .mustard]
         )
     }
 }

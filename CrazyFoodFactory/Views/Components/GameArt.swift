@@ -26,6 +26,10 @@ enum GameArt {
         case .iceCream: return "ArtIceCream"
         case .donut: return "ArtDonut"
         case .sandwich: return "ArtSandwich"
+        case .taco: return "ArtTaco"
+        case .pasta: return "ArtPasta"
+        case .cupcake: return "ArtCupcake"
+        case .hotDog: return "ArtHotDog"
         }
     }
 

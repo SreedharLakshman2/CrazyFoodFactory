@@ -17,19 +17,23 @@ struct GameplayView: View {
             ZStack {
                 FactoryBackground(compact: true)
 
-                VStack(spacing: short ? 10 : 14) {
+                VStack(spacing: short ? 6 : 8) {
                     topBar
                     IngredientTray(
                         ingredients: game.definition.ingredients,
                         placed: game.placed,
+                        compact: short,
                         onTap: game.tapIngredient
                     )
+                    if let lesson = game.lastLesson {
+                        LearnFactBanner(text: lesson)
+                    }
                     if let speech = game.speech {
                         SpeechBubble(text: speech, compact: true)
+                            .padding(.horizontal, 16)
                     }
-                    Spacer(minLength: 8)
                     workstation(short: short, width: geo.size.width)
-                    Spacer(minLength: 12)
+                    Spacer(minLength: 4)
                 }
                 .factoryReadableWidth()
                 .padding(.top, 8)
@@ -94,8 +98,8 @@ struct GameplayView: View {
     }
 
     private func workstation(short: Bool, width: CGFloat) -> some View {
-        let foodSize: CGFloat = short ? 188 : 216
-        let chefSize: CGFloat = short ? 200 : 236
+        let foodSize: CGFloat = short ? 132 : 150
+        let chefSize: CGFloat = short ? 140 : 158
         return ZStack(alignment: .bottom) {
             FactoryTable()
                 .frame(width: short ? 220 : 248, height: short ? 74 : 84)
@@ -141,7 +145,7 @@ struct GameplayView: View {
                 .offset(x: short ? 138 : 154, y: -18)
             }
         }
-        .frame(height: short ? 290 : 340)
+        .frame(height: short ? 190 : 214)
         .padding(.horizontal, 4)
         .frame(maxWidth: min(width, 540))
     }

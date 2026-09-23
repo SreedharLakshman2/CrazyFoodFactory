@@ -10,6 +10,14 @@ struct ResultView: View {
             ZStack {
                 GameTheme.resultGradient.ignoresSafeArea()
                 ConfettiView()
+                FactoryLottie(name: .yumHearts)
+                    .frame(height: 180)
+                    .offset(y: -40)
+                    .allowsHitTesting(false)
+                FactoryLottie(name: .yumBurst)
+                    .frame(height: 120)
+                    .offset(y: -210)
+                    .allowsHitTesting(false)
 
                 VStack(spacing: short ? 14 : 20) {
                     RibbonTitle(text: store.currentResult?.title ?? "Yummy!")

@@ -217,7 +217,7 @@ struct FoodCard: View {
                     .foregroundColor(GameTheme.navy)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, wide ? 20 : 22)
+            .padding(.vertical, wide ? 20 : (artSize < 90 ? 12 : 18))
             .background(
                 RoundedRectangle(cornerRadius: 32, style: .continuous)
                     .fill(
@@ -238,66 +238,127 @@ struct FoodCard: View {
 struct IngredientCard: View {
     let ingredient: Ingredient
     var used: Bool = false
+    var compact: Bool = false
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            ZStack {
-                Circle()
-                    .fill(Color.white)
-                    .overlay(Circle().stroke(Color.white.opacity(0.95), lineWidth: 3))
-                    .shadow(color: Color.black.opacity(0.1), radius: 6, y: 3)
-                IngredientArt(id: ingredient.id)
-                    .padding(8)
-                if used {
-                    Circle().fill(Color.white.opacity(0.4))
+            VStack(spacing: compact ? 4 : 6) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .fill(Color.white)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .stroke(ingredient.trayColor.opacity(0.55), lineWidth: 3)
+                        )
+                        .shadow(color: Color.black.opacity(0.08), radius: 5, y: 3)
+                    IngredientArt(id: ingredient.id)
+                        .padding(compact ? 10 : 12)
+                    if used {
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .fill(Color.white.opacity(0.45))
+                    }
                 }
+                .frame(width: compact ? 78 : 88, height: compact ? 70 : 80)
+                Text(ingredient.displayName)
+                    .font(GameFont.headline(compact ? 13 : 15))
+                    .foregroundColor(GameTheme.navy)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                Text(ingredient.kidFactShort)
+                    .font(GameFont.caption(compact ? 11 : 12))
+                    .foregroundColor(GameTheme.navy.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .frame(width: 74, height: 74)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 6)
+            .padding(.vertical, compact ? 8 : 10)
+            .background(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [ingredient.trayColor.opacity(0.38), Color.white.opacity(0.92)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(Color.white.opacity(0.95), lineWidth: 2)
+            )
             .opacity(used && !ingredient.isOptional ? 0.55 : 1)
         }
         .buttonStyle(PressScaleStyle())
-        .accessibilityLabel(ingredient.displayName)
+        .accessibilityLabel("\(ingredient.displayName). \(ingredient.kidFact)")
     }
 }
 
 struct IngredientTray: View {
     let ingredients: [Ingredient]
     let placed: [IngredientID]
+    var compact: Bool = false
     var onTap: (IngredientID) -> Void
 
     var body: some View {
-        Group {
-            if ingredients.count <= 6 {
-                HStack(spacing: 10) {
-                    ForEach(ingredients) { item in
-                        ingredientButton(item)
+        let columns = [
+            GridItem(.adaptive(minimum: compact ? 104 : 112), spacing: 10)
+        ]
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Ingredients")
+                .font(GameFont.caption(13))
+                .foregroundColor(GameTheme.navy.opacity(0.72))
+
+            LazyVGrid(columns: columns, spacing: 10) {
+                ForEach(ingredients) { item in
+                    IngredientCard(
+                        ingredient: item,
+                        used: placed.contains(item.id) && !item.isOptional && !item.isChaosBait,
+                        compact: true
+                    ) {
+                        onTap(item.id)
                     }
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
-                        ForEach(ingredients) { item in
-                            ingredientButton(item)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 6)
                 }
             }
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color.white.opacity(0.62))
+        )
+        .padding(.horizontal, 14)
         .accessibilityElement(children: .contain)
     }
+}
 
-    private func ingredientButton(_ item: Ingredient) -> some View {
-        IngredientCard(
-            ingredient: item,
-            used: placed.contains(item.id) && !item.isOptional && !item.isChaosBait
-        ) {
-            onTap(item.id)
+struct LearnFactBanner: View {
+    let text: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "lightbulb.fill")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(GameTheme.primaryYellow)
+            Text(text)
+                .font(GameFont.caption(14))
+                .foregroundColor(GameTheme.navy)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.08), radius: 6, y: 3)
+        )
+        .padding(.horizontal, 16)
+        .accessibilityLabel(text)
     }
 }
 

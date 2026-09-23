@@ -6,6 +6,10 @@ enum FoodType: String, Codable, CaseIterable, Identifiable, Hashable {
     case iceCream
     case donut
     case sandwich
+    case taco
+    case pasta
+    case cupcake
+    case hotDog
 
     var id: String { rawValue }
 
@@ -16,6 +20,10 @@ enum FoodType: String, Codable, CaseIterable, Identifiable, Hashable {
         case .iceCream: return "Ice Cream"
         case .donut: return "Donuts"
         case .sandwich: return "Sandwich"
+        case .taco: return "Taco"
+        case .pasta: return "Pasta"
+        case .cupcake: return "Cupcake"
+        case .hotDog: return "Hot Dog"
         }
     }
 
@@ -26,6 +34,10 @@ enum FoodType: String, Codable, CaseIterable, Identifiable, Hashable {
         case .iceCream: return "Make Ice Cream!"
         case .donut: return "Decorate Donuts!"
         case .sandwich: return "Build the Perfect Sandwich!"
+        case .taco: return "Build a Taco!"
+        case .pasta: return "Cook the Pasta!"
+        case .cupcake: return "Frost a Cupcake!"
+        case .hotDog: return "Make a Hot Dog!"
         }
     }
 
@@ -36,6 +48,10 @@ enum FoodType: String, Codable, CaseIterable, Identifiable, Hashable {
         case .iceCream: return "Ice Cream Ready!"
         case .donut: return "Donut Decorated!"
         case .sandwich: return "Sandwich Complete!"
+        case .taco: return "Taco Time!"
+        case .pasta: return "Pasta Perfect!"
+        case .cupcake: return "Cupcake Cute!"
+        case .hotDog: return "Hot Dog Yum!"
         }
     }
 
@@ -46,6 +62,10 @@ enum FoodType: String, Codable, CaseIterable, Identifiable, Hashable {
         case .iceCream: return Color(hex: 0xE8D6FF)
         case .donut: return Color(hex: 0xFFD2EC)
         case .sandwich: return Color(hex: 0xC4F5C0)
+        case .taco: return Color(hex: 0xFFD9A0)
+        case .pasta: return Color(hex: 0xFFC8C0)
+        case .cupcake: return Color(hex: 0xFFD0F0)
+        case .hotDog: return Color(hex: 0xFFE6B8)
         }
     }
 
@@ -56,6 +76,10 @@ enum FoodType: String, Codable, CaseIterable, Identifiable, Hashable {
         case .iceCream: return GameTheme.iceCreamPink
         case .donut: return GameTheme.donutPink
         case .sandwich: return GameTheme.sandwichGreen
+        case .taco: return Color(hex: 0xFF8A3D)
+        case .pasta: return Color(hex: 0xE85A4A)
+        case .cupcake: return Color(hex: 0xFF6AD5)
+        case .hotDog: return Color(hex: 0xF4A020)
         }
     }
 
@@ -66,24 +90,10 @@ enum FoodType: String, Codable, CaseIterable, Identifiable, Hashable {
         case .iceCream: return "Scoop, don't bake!"
         case .donut: return "Tap to add toppings!"
         case .sandwich: return "Stack the layers correctly!"
-        }
-    }
-}
-
-enum FoodAsset {
-    case pizza
-    case burger
-    case iceCream
-    case donut
-    case sandwich
-
-    init(food: FoodType) {
-        switch food {
-        case .pizza: self = .pizza
-        case .burger: self = .burger
-        case .iceCream: self = .iceCream
-        case .donut: self = .donut
-        case .sandwich: self = .sandwich
+        case .taco: return "Fill the shell gently!"
+        case .pasta: return "Sauce, then toppings!"
+        case .cupcake: return "Frost it cute!"
+        case .hotDog: return "Dog in the bun!"
         }
     }
 }

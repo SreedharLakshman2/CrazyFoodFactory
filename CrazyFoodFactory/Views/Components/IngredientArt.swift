@@ -81,6 +81,28 @@ struct IngredientArt: View {
                     ArtImage(name: "ArtDonut")
                 case .ham:
                     clayLoaf(s * 0.9, Color(hex: 0xF48A8A), Color(hex: 0xD45A5A), seeds: false)
+                case .tortilla:
+                    clayCircle(s, Color(hex: 0xF0C56A), Color(hex: 0xD49A3A))
+                case .tacoBeef, .meatball, .sausage:
+                    clayLoaf(s * 0.9, Color(hex: 0x8D5A36), Color(hex: 0x5A3418), seeds: false)
+                case .salsa, .ketchup:
+                    clayCircle(s * 0.72, Color(hex: 0xFF6B5A), Color(hex: 0xC62828))
+                case .avocado:
+                    clayCircle(s, Color(hex: 0x9BE36A), Color(hex: 0x4CAF50))
+                case .noodles:
+                    clayLoaf(s, Color(hex: 0xF6D56A), Color(hex: 0xE0A24A), seeds: false)
+                case .basil:
+                    clayLoaf(s * 0.8, Color(hex: 0x66BB6A), Color(hex: 0x2E7D32), seeds: false)
+                case .cupcakeBase:
+                    clayCircle(s * 0.78, Color(hex: 0xF4C56A), Color(hex: 0xD89A3C))
+                case .cupcakeFrosting:
+                    clayCircle(s, Color(hex: 0xFF9BC8), Color(hex: 0xE85A96))
+                case .candle:
+                    Capsule().fill(Color(hex: 0xFFE14A)).frame(width: s * 0.18, height: s * 0.62)
+                case .hotdogBun:
+                    clayLoaf(s, Color(hex: 0xF4C56A), Color(hex: 0xD89A3C), seeds: true)
+                case .mustard:
+                    clayCircle(s * 0.7, Color(hex: 0xFFE14A), Color(hex: 0xF4B400))
                 default:
                     clayCircle(s, id.trayColor, id.trayColor.opacity(0.75))
                 }

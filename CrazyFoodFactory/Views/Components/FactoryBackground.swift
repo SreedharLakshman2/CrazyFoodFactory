@@ -10,10 +10,14 @@ struct FactoryBackground: View {
             let h = geo.size.height
             ZStack {
                 LinearGradient(
-                    colors: [Color(hex: 0x5CC8FF), Color(hex: 0x9ADEFF), Color(hex: 0xEAF8FF)],
+                    colors: [Color(hex: 0x2EB0FF), Color(hex: 0x7AD8FF), Color(hex: 0xFFE56A), Color(hex: 0xFFC0EC)],
                     startPoint: .top,
                     endPoint: .bottom
                 )
+                Circle().fill(Color(hex: 0xFFE14A).opacity(0.34)).frame(width: 110, height: 110).offset(x: w * 0.38, y: -h * 0.34)
+                Circle().fill(Color(hex: 0xFF8AD4).opacity(0.28)).frame(width: 86, height: 86).offset(x: -w * 0.36, y: -h * 0.22)
+                Circle().fill(Color(hex: 0x49E57D).opacity(0.24)).frame(width: 64, height: 64).offset(x: w * 0.4, y: h * 0.08)
+                Circle().fill(Color(hex: 0xFF9A3C).opacity(0.18)).frame(width: 48, height: 48).offset(x: -w * 0.28, y: h * 0.12)
 
                 HStack(spacing: 14) {
                     ForEach(0..<3, id: \.self) { _ in

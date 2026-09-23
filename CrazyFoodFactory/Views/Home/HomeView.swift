@@ -11,10 +11,20 @@ struct HomeView: View {
             let pad = FactoryLayout.isRegular(geo.size)
             ZStack {
                 FactoryBackground()
+                FactoryLottie(name: .yumStars)
+                    .frame(height: 140)
+                    .offset(y: -250)
+                    .allowsHitTesting(false)
 
                 VStack(spacing: short ? 8 : 14) {
                     HStack {
                         SettingsButton { router.showSettings = true }
+                        CircleIconButton(
+                            systemName: "book.fill",
+                            accessibility: "How kids learn"
+                        ) {
+                            router.go(.howTo)
+                        }
                         Spacer()
                         CircleIconButton(
                             systemName: "map.fill",
@@ -43,6 +53,12 @@ struct HomeView: View {
                         .padding(.horizontal, 24)
 
                     chefStage(short: short, pad: pad)
+
+                    Text("Kids learn food names, veggie facts, and following steps — all offline!")
+                        .font(GameFont.caption(13))
+                        .foregroundColor(GameTheme.navy.opacity(0.7))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 28)
 
                     CrazyButton(title: "PLAY", icon: "play.fill") {
                         router.go(.foodSelection)
@@ -99,19 +115,21 @@ struct HomeView: View {
     }
 
     private func chefStage(short: Bool, pad: Bool) -> some View {
-        let chef: CGFloat = pad ? 280 : (short ? 210 : 250)
+        let chef: CGFloat = pad ? 280 : (short ? 200 : 236)
         return ZStack {
+            FactoryLottie(name: .yumStars)
+                .opacity(0.85)
             ChefCharacter(pose: .idle, size: chef, showsSpatula: true)
-            FoodIllustrationView(food: .pizza, size: pad ? 100 : 84)
-                .offset(x: pad ? -150 : -124, y: pad ? 70 : 54)
-            FoodIllustrationView(food: .burger, size: pad ? 92 : 78)
-                .offset(x: pad ? -150 : -122, y: pad ? 150 : 126)
-            FoodIllustrationView(food: .iceCream, size: pad ? 96 : 80)
-                .offset(x: pad ? 150 : 126, y: pad ? 16 : 6)
-            FoodIllustrationView(food: .donut, size: pad ? 90 : 76)
-                .offset(x: pad ? 150 : 128, y: pad ? 140 : 118)
+            FoodIllustrationView(food: .taco, size: pad ? 78 : 64)
+                .offset(x: pad ? -158 : -128, y: pad ? 18 : 8)
+            FoodIllustrationView(food: .cupcake, size: pad ? 74 : 60)
+                .offset(x: pad ? 158 : 128, y: pad ? 18 : 8)
+            FoodIllustrationView(food: .pasta, size: pad ? 78 : 64)
+                .offset(x: pad ? -150 : -122, y: pad ? 148 : 122)
+            FoodIllustrationView(food: .hotDog, size: pad ? 76 : 62)
+                .offset(x: pad ? 150 : 124, y: pad ? 148 : 122)
         }
-        .frame(height: pad ? 340 : (short ? 250 : 300))
+        .frame(height: pad ? 340 : (short ? 236 : 280))
     }
 }
 

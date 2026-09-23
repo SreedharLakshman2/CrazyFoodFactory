@@ -2,6 +2,7 @@ import SwiftUI
 
 enum AppScreen: Equatable {
     case splash
+    case howTo
     case home
     case foodSelection
     case gameplay
@@ -14,7 +15,7 @@ enum AppScreen: Equatable {
 
 @MainActor
 final class AppRouter: ObservableObject {
-    @Published var screen: AppScreen = .home
+    @Published var screen: AppScreen = .splash
     @Published var showSettings = false
     @Published var showPause = false
 

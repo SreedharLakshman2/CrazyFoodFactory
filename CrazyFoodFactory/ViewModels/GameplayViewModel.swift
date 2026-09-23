@@ -33,6 +33,7 @@ final class GameplayViewModel: ObservableObject {
     @Published var triggeredRandomChaos = false
     @Published var sandwichShake = false
     @Published var overlayScale: CGFloat = 1
+    @Published var lastLesson: String?
 
     private var cookTask: Task<Void, Never>?
 
@@ -108,7 +109,8 @@ final class GameplayViewModel: ObservableObject {
         if let chaos = activeChaos, chaos.type == .pineapplePizza {
             placed.append(.pineapple)
             sparkleTick += 1
-            advanceIfNeeded(justPlaced: .pineapple)
+            lastLesson = IngredientID.pineapple.learnLine
+            advanceIfNeeded(justPlaced: .pineapple, announcedName: IngredientID.pineapple.displayName)
         }
         activeChaos = nil
         chefPose = .happy
@@ -123,6 +125,7 @@ final class GameplayViewModel: ObservableObject {
         phase = .assembling
         chefPose = .cooking
         speech = definition.type.speechHint
+        lastLesson = nil
         shake = 0
         melted = false
         cookProgress = 0
@@ -160,6 +163,10 @@ final class GameplayViewModel: ObservableObject {
         case .iceCream: return "Cool and yummy!"
         case .donut: return "YUMMY!"
         case .sandwich: return "Stacked perfectly!"
+        case .taco: return "Taco fiesta!"
+        case .pasta: return "Noodle dance!"
+        case .cupcake: return "Sweet and cute!"
+        case .hotDog: return "Ballpark yummy!"
         }
     }
 
@@ -176,8 +183,9 @@ final class GameplayViewModel: ObservableObject {
             self.flying = nil
             self.sparkleTick += 1
             self.chefPose = .happy
-            self.speech = self.currentStep?.hint.isEmpty == false ? self.currentStep?.hint : "Yum!"
-            self.advanceIfNeeded(justPlaced: id)
+            self.speech = "\(id.displayName)!"
+            self.lastLesson = id.learnLine
+            self.advanceIfNeeded(justPlaced: id, announcedName: id.displayName)
             self.maybeRandomChaos()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                 self.foodBounce = false
@@ -188,18 +196,24 @@ final class GameplayViewModel: ObservableObject {
         }
     }
 
-    private func advanceIfNeeded(justPlaced id: IngredientID) {
+    private func advanceIfNeeded(justPlaced id: IngredientID, announcedName: String) {
         guard let step = currentStep, !step.isOven else { return }
         let count = placed.filter { step.accepted.contains($0) }.count
         if count >= step.minCount {
             stepIndex += 1
             if let next = currentStep {
-                speech = next.hint.isEmpty ? "Looking tasty!" : next.hint
+                let hint = next.hint.isEmpty ? "Looking tasty!" : next.hint
                 if next.isOven {
                     phase = .readyToCook
                     chefPose = .thumbsUp
                     if !definition.ovenIsTrap {
                         startCooking()
+                    }
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.7) { [weak self] in
+                    guard let self else { return }
+                    if self.speech == "\(announcedName)!" {
+                        self.speech = hint
                     }
                 }
             } else {

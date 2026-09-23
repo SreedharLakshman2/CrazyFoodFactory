@@ -19,40 +19,33 @@ struct FoodSelectionView: View {
                     .padding(.top, 6)
 
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: short ? 16 : 22) {
-                            SpeechBubble(text: "What do you want\nto make today?")
-                                .padding(.top, 12)
-                                .padding(.bottom, 4)
+                        VStack(spacing: short ? 10 : 14) {
+                            FactoryLottie(name: .foodParade)
+                                .frame(height: short ? 52 : 64)
+                            SpeechBubble(text: "What do you want\nto make today?", compact: true)
+                                .padding(.top, 2)
+                            Text("9 yummy dishes • tap one to cook")
+                                .font(GameFont.caption(14))
+                                .foregroundColor(GameTheme.navy.opacity(0.7))
 
                             LazyVGrid(
                                 columns: [
-                                    GridItem(.flexible(), spacing: 16),
-                                    GridItem(.flexible(), spacing: 16)
+                                    GridItem(.flexible(), spacing: 10),
+                                    GridItem(.flexible(), spacing: 10),
+                                    GridItem(.flexible(), spacing: 10)
                                 ],
-                                spacing: 16
+                                spacing: 10
                             ) {
-                                ForEach([FoodType.pizza, .burger, .iceCream, .donut], id: \.self) { food in
-                                    FoodCard(food: food, artSize: short ? 104 : 118) { choose(food) }
+                                ForEach(FoodType.allCases) { food in
+                                    FoodCard(food: food, artSize: short ? 64 : 72) { choose(food) }
                                         .overlay(alignment: .topTrailing) {
                                             if store.sessionCompleted.contains(food) {
                                                 Image(systemName: "checkmark.circle.fill")
                                                     .foregroundColor(GameTheme.successGreen)
                                                     .font(.title2)
-                                                    .padding(12)
+                                                    .padding(10)
                                             }
                                         }
-                                }
-                            }
-
-                            FoodCard(food: .sandwich, wide: true, artSize: short ? 112 : 128) {
-                                choose(.sandwich)
-                            }
-                            .overlay(alignment: .topTrailing) {
-                                if store.sessionCompleted.contains(.sandwich) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(GameTheme.successGreen)
-                                        .font(.title2)
-                                        .padding(12)
                                 }
                             }
                         }

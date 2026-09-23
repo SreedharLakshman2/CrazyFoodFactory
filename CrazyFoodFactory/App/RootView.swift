@@ -10,6 +10,15 @@ struct RootView: View {
             switch router.screen {
             case .splash:
                 SplashView {
+                    if store.save.hasSeenHowTo {
+                        router.go(.home)
+                    } else {
+                        router.go(.howTo)
+                    }
+                }
+            case .howTo:
+                HowToPlayView {
+                    store.markSeenHowTo()
                     router.go(.home)
                 }
             case .home:
@@ -47,6 +56,7 @@ struct RootView: View {
         .sheet(isPresented: $router.showSettings) {
             SettingsView()
                 .environmentObject(store)
+                .environmentObject(router)
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
@@ -93,6 +103,8 @@ struct RootView: View {
 
     private func handleDeepLink(_ url: URL) {
         switch url.host {
+        case "howto", "learn", "onboard":
+            router.go(.howTo)
         case "home":
             router.go(.home)
         case "select", "foods":

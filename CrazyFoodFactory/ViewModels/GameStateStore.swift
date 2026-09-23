@@ -99,6 +99,12 @@ final class GameStateStore: ObservableObject {
         AudioManager.shared.applySettings(music: save.musicEnabled, sound: save.soundEnabled)
     }
 
+    func markSeenHowTo() {
+        save.hasSeenHowTo = true
+        save.hasSeenTitle = true
+        persist()
+    }
+
     func setSound(_ on: Bool) {
         save.soundEnabled = on
         persist()

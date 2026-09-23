@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject private var store: GameStateStore
+    @EnvironmentObject private var router: AppRouter
     @Environment(\.dismiss) private var dismiss
     @State private var confirmReset = false
     @State private var showPrivacy = false
@@ -45,6 +46,12 @@ struct SettingsView: View {
                     .buttonStyle(PressScaleStyle())
                     .accessibilityLabel("Reset Progress")
 
+                    Button("How Kids Learn") {
+                        dismiss()
+                        router.go(.howTo)
+                    }
+                    .font(GameFont.headline(16))
+                    .foregroundColor(GameTheme.navy)
                     Button("Privacy Policy") { showPrivacy = true }
                         .font(GameFont.headline(16))
                         .foregroundColor(GameTheme.navy)
@@ -141,4 +148,5 @@ enum LegalCopy {
 #Preview {
     SettingsView()
         .environmentObject(GameStateStore.preview)
+        .environmentObject(AppRouter())
 }
