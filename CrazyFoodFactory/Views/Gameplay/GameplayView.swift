@@ -17,7 +17,7 @@ struct GameplayView: View {
             ZStack {
                 FactoryBackground(compact: true)
 
-                VStack(spacing: short ? 6 : 8) {
+                VStack(spacing: short ? 10 : 14) {
                     topBar
                     IngredientTray(
                         ingredients: game.definition.ingredients,
@@ -25,23 +25,21 @@ struct GameplayView: View {
                         compact: short,
                         onTap: game.tapIngredient
                     )
-                    if let lesson = game.lastLesson {
-                        LearnFactBanner(text: lesson)
+                    if let text = game.lastLesson ?? game.speech, !text.isEmpty {
+                        SpeechBubble(text: text, compact: short)
+                            .padding(.horizontal, 28)
                     }
-                    if let speech = game.speech {
-                        SpeechBubble(text: speech, compact: true)
-                            .padding(.horizontal, 16)
-                    }
+                    Spacer(minLength: 8)
                     workstation(short: short, width: geo.size.width)
-                    Spacer(minLength: 4)
+                    Spacer(minLength: 12)
                 }
                 .factoryReadableWidth()
-                .padding(.top, 8)
+                .padding(.top, 10)
                 .modifier(ShakeEffect(animatableData: game.shake))
 
                 if let flying = game.flying {
                     IngredientArt(id: flying)
-                        .frame(width: 52, height: 52)
+                        .frame(width: 56, height: 56)
                         .transition(.scale)
                 }
 
@@ -94,20 +92,20 @@ struct GameplayView: View {
             Spacer()
             ProgressStars(filled: game.starPreview)
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, 16)
     }
 
     private func workstation(short: Bool, width: CGFloat) -> some View {
-        let foodSize: CGFloat = short ? 132 : 150
-        let chefSize: CGFloat = short ? 140 : 158
+        let foodSize: CGFloat = short ? 188 : 220
+        let chefSize: CGFloat = short ? 196 : 228
         return ZStack(alignment: .bottom) {
             FactoryTable()
-                .frame(width: short ? 220 : 248, height: short ? 74 : 84)
-                .offset(x: 28, y: -6)
+                .frame(width: short ? 260 : 300, height: short ? 88 : 100)
+                .offset(x: 30, y: -4)
 
             HStack(alignment: .bottom, spacing: 0) {
                 ChefCharacter(pose: game.chefPose, size: chefSize)
-                    .offset(x: -4, y: 10)
+                    .offset(x: 4, y: 8)
 
                 Spacer(minLength: 0)
 
@@ -127,26 +125,25 @@ struct GameplayView: View {
                     .animation(GameAnimations.bounce, value: game.foodBounce)
                     SparkleEffect(tick: game.sparkleTick)
                 }
-                .padding(.bottom, 30)
+                .padding(.bottom, 36)
 
                 Spacer(minLength: 0)
             }
-            .padding(.horizontal, 2)
+            .padding(.horizontal, 8)
 
             if game.definition.ovenIsTrap {
                 Button {
                     game.tapOven()
                 } label: {
                     OvenArt(glowing: game.ovenGlow, meltedInside: game.melted)
-                        .frame(width: short ? 112 : 128, height: short ? 112 : 128)
+                        .frame(width: short ? 120 : 136, height: short ? 120 : 136)
                 }
                 .buttonStyle(PressScaleStyle())
                 .accessibilityLabel("Oven")
-                .offset(x: short ? 138 : 154, y: -18)
+                .offset(x: short ? 142 : 160, y: -10)
             }
         }
-        .frame(height: short ? 190 : 214)
-        .padding(.horizontal, 4)
+        .frame(height: short ? 268 : 310)
         .frame(maxWidth: min(width, 540))
     }
 

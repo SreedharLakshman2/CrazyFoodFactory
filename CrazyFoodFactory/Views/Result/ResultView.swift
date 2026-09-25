@@ -8,15 +8,15 @@ struct ResultView: View {
         GeometryReader { geo in
             let short = geo.size.height < 720
             ZStack {
-                GameTheme.resultGradient.ignoresSafeArea()
+                LinearGradient(
+                    colors: [Color(hex: 0x7AD4FF), Color(hex: 0xEAF7FF)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
                 ConfettiView()
                 FactoryLottie(name: .yumHearts)
-                    .frame(height: 180)
-                    .offset(y: -40)
-                    .allowsHitTesting(false)
-                FactoryLottie(name: .yumBurst)
-                    .frame(height: 120)
-                    .offset(y: -210)
+                    .frame(height: 140)
                     .allowsHitTesting(false)
 
                 VStack(spacing: short ? 14 : 20) {

@@ -10,49 +10,41 @@ struct FactoryBackground: View {
             let h = geo.size.height
             ZStack {
                 LinearGradient(
-                    colors: [Color(hex: 0x2EB0FF), Color(hex: 0x7AD8FF), Color(hex: 0xFFE56A), Color(hex: 0xFFC0EC)],
+                    colors: [Color(hex: 0x7AD4FF), Color(hex: 0xB8EBFF), Color(hex: 0xEAF7FF)],
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                Circle().fill(Color(hex: 0xFFE14A).opacity(0.34)).frame(width: 110, height: 110).offset(x: w * 0.38, y: -h * 0.34)
-                Circle().fill(Color(hex: 0xFF8AD4).opacity(0.28)).frame(width: 86, height: 86).offset(x: -w * 0.36, y: -h * 0.22)
-                Circle().fill(Color(hex: 0x49E57D).opacity(0.24)).frame(width: 64, height: 64).offset(x: w * 0.4, y: h * 0.08)
-                Circle().fill(Color(hex: 0xFF9A3C).opacity(0.18)).frame(width: 48, height: 48).offset(x: -w * 0.28, y: h * 0.12)
 
                 HStack(spacing: 14) {
                     ForEach(0..<3, id: \.self) { _ in
                         RoundedRectangle(cornerRadius: 11, style: .continuous)
-                            .fill(Color.white.opacity(0.34))
-                            .frame(width: w * 0.15, height: 30)
+                            .fill(Color.white.opacity(0.42))
+                            .frame(width: w * 0.15, height: 28)
                     }
                 }
                 .offset(y: compact ? -h * 0.37 : -h * 0.39)
 
                 Capsule()
-                    .fill(Color(hex: 0x90CAF9).opacity(0.75))
-                    .frame(width: 24, height: h * 0.24)
-                    .offset(x: -w * 0.43, y: -h * 0.14)
-                Capsule()
-                    .fill(Color(hex: 0xFFCC80).opacity(0.78))
-                    .frame(width: 20, height: h * 0.18)
-                    .offset(x: w * 0.44, y: -h * 0.18)
+                    .fill(Color(hex: 0x90CAF9).opacity(0.7))
+                    .frame(width: 22, height: h * 0.22)
+                    .offset(x: -w * 0.43, y: -h * 0.12)
                 Capsule()
                     .fill(Color(hex: 0x81D4FA).opacity(0.55))
-                    .frame(width: 14, height: h * 0.12)
-                    .offset(x: -w * 0.36, y: -h * 0.28)
+                    .frame(width: 16, height: h * 0.14)
+                    .offset(x: w * 0.44, y: -h * 0.18)
 
                 if busy {
                     SteamPuffs()
                         .frame(width: 80, height: 70)
-                        .offset(x: -w * 0.4, y: -h * 0.3)
+                        .offset(x: -w * 0.4, y: -h * 0.28)
                 }
 
                 VStack {
                     Spacer()
                     Ellipse()
-                        .fill(Color.white.opacity(0.55))
-                        .frame(width: w * 1.3, height: h * 0.28)
-                        .offset(y: 24)
+                        .fill(Color.white.opacity(0.88))
+                        .frame(width: w * 1.35, height: h * 0.30)
+                        .offset(y: 28)
                 }
             }
             .allowsHitTesting(false)

@@ -210,25 +210,23 @@ struct FoodCard: View {
             Haptics.light()
             action()
         } label: {
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 FoodIllustrationView(food: food, size: artSize)
                 Text(food.displayName)
-                    .font(GameFont.headline(18))
+                    .font(GameFont.headline(wide ? 20 : 17))
                     .foregroundColor(GameTheme.navy)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, wide ? 20 : (artSize < 90 ? 12 : 18))
+            .padding(.vertical, wide ? 22 : 18)
             .background(
-                RoundedRectangle(cornerRadius: 32, style: .continuous)
-                    .fill(
-                        LinearGradient(colors: [food.cardColor, food.cardColor.opacity(0.88)], startPoint: .top, endPoint: .bottom)
-                    )
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(food.cardColor)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 32, style: .continuous)
-                    .stroke(Color.white.opacity(0.92), lineWidth: 3)
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(Color.white.opacity(0.95), lineWidth: 3)
             )
-            .shadow(color: Color.black.opacity(0.1), radius: 12, y: 7)
+            .shadow(color: Color.black.opacity(0.08), radius: 10, y: 6)
         }
         .buttonStyle(PressScaleStyle())
         .accessibilityLabel(food.displayName)
@@ -243,54 +241,26 @@ struct IngredientCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: compact ? 4 : 6) {
+            VStack(spacing: 7) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    Circle()
                         .fill(Color.white)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                                .stroke(ingredient.trayColor.opacity(0.55), lineWidth: 3)
-                        )
-                        .shadow(color: Color.black.opacity(0.08), radius: 5, y: 3)
+                        .shadow(color: Color.black.opacity(0.1), radius: 6, y: 3)
                     IngredientArt(id: ingredient.id)
-                        .padding(compact ? 10 : 12)
+                        .padding(compact ? 11 : 13)
                     if used {
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .fill(Color.white.opacity(0.45))
+                        Circle().fill(Color.white.opacity(0.5))
                     }
                 }
-                .frame(width: compact ? 78 : 88, height: compact ? 70 : 80)
+                .frame(width: compact ? 64 : 70, height: compact ? 64 : 70)
                 Text(ingredient.displayName)
-                    .font(GameFont.headline(compact ? 13 : 15))
+                    .font(GameFont.caption(12))
                     .foregroundColor(GameTheme.navy)
                     .lineLimit(1)
                     .minimumScaleFactor(0.75)
-                Text(ingredient.kidFactShort)
-                    .font(GameFont.caption(compact ? 11 : 12))
-                    .foregroundColor(GameTheme.navy.opacity(0.7))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(width: compact ? 68 : 74)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 6)
-            .padding(.vertical, compact ? 8 : 10)
-            .background(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [ingredient.trayColor.opacity(0.38), Color.white.opacity(0.92)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.white.opacity(0.95), lineWidth: 2)
-            )
-            .opacity(used && !ingredient.isOptional ? 0.55 : 1)
+            .opacity(used && !ingredient.isOptional ? 0.5 : 1)
         }
         .buttonStyle(PressScaleStyle())
         .accessibilityLabel("\(ingredient.displayName). \(ingredient.kidFact)")
@@ -304,33 +274,22 @@ struct IngredientTray: View {
     var onTap: (IngredientID) -> Void
 
     var body: some View {
-        let columns = [
-            GridItem(.adaptive(minimum: compact ? 104 : 112), spacing: 10)
-        ]
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Ingredients")
-                .font(GameFont.caption(13))
-                .foregroundColor(GameTheme.navy.opacity(0.72))
-
-            LazyVGrid(columns: columns, spacing: 10) {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: compact ? 10 : 12) {
                 ForEach(ingredients) { item in
                     IngredientCard(
                         ingredient: item,
                         used: placed.contains(item.id) && !item.isOptional && !item.isChaosBait,
-                        compact: true
+                        compact: compact
                     ) {
                         onTap(item.id)
                     }
                 }
             }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(Color.white.opacity(0.62))
-        )
-        .padding(.horizontal, 14)
+        .scrollClipDisabled()
         .accessibilityElement(children: .contain)
     }
 }

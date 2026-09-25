@@ -36,7 +36,7 @@ enum GameTheme {
         endPoint: .bottom
     )
     static let skyGradient = LinearGradient(
-        colors: [factorySkyTop, Color(hex: 0x7AD8FF), Color(hex: 0xFFE7A8), factorySkyBottom],
+        colors: [Color(hex: 0x7AD4FF), Color(hex: 0xB8EBFF), Color(hex: 0xEAF7FF)],
         startPoint: .top,
         endPoint: .bottom
     )

@@ -16,47 +16,56 @@ struct FoodSelectionView: View {
                         Spacer()
                     }
                     .padding(.horizontal, 18)
-                    .padding(.top, 6)
+                    .padding(.top, 8)
+
+                    SpeechBubble(text: "What do you want\nto make today?")
+                        .padding(.top, 10)
+                        .padding(.bottom, short ? 12 : 18)
 
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: short ? 10 : 14) {
-                            FactoryLottie(name: .foodParade)
-                                .frame(height: short ? 52 : 64)
-                            SpeechBubble(text: "What do you want\nto make today?", compact: true)
-                                .padding(.top, 2)
-                            Text("9 yummy dishes • tap one to cook")
-                                .font(GameFont.caption(14))
-                                .foregroundColor(GameTheme.navy.opacity(0.7))
-
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible(), spacing: 10),
-                                    GridItem(.flexible(), spacing: 10),
-                                    GridItem(.flexible(), spacing: 10)
-                                ],
-                                spacing: 10
-                            ) {
-                                ForEach(FoodType.allCases) { food in
-                                    FoodCard(food: food, artSize: short ? 64 : 72) { choose(food) }
-                                        .overlay(alignment: .topTrailing) {
-                                            if store.sessionCompleted.contains(food) {
-                                                Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundColor(GameTheme.successGreen)
-                                                    .font(.title2)
-                                                    .padding(10)
-                                            }
-                                        }
-                                }
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible(), spacing: 16),
+                                GridItem(.flexible(), spacing: 16)
+                            ],
+                            spacing: 16
+                        ) {
+                            ForEach(gridFoods) { food in
+                                foodButton(food, artSize: short ? 96 : 108)
                             }
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 28)
+
+                        if let last = trailingFood {
+                            foodButton(last, artSize: short ? 108 : 120, wide: true)
+                                .padding(.top, 16)
+                        }
                     }
+                    .padding(.horizontal, 22)
+                    .padding(.bottom, 24)
                 }
                 .factoryReadableWidth()
             }
         }
         .statusBarHidden(true)
+    }
+
+    private var foods: [FoodType] { FoodType.allCases }
+    private var trailingFood: FoodType? { foods.count.isMultiple(of: 2) ? nil : foods.last }
+    private var gridFoods: [FoodType] {
+        guard trailingFood != nil else { return foods }
+        return Array(foods.dropLast())
+    }
+
+    private func foodButton(_ food: FoodType, artSize: CGFloat, wide: Bool = false) -> some View {
+        FoodCard(food: food, wide: wide, artSize: artSize) { choose(food) }
+            .overlay(alignment: .topTrailing) {
+                if store.sessionCompleted.contains(food) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(GameTheme.successGreen)
+                        .font(.title2)
+                        .padding(12)
+                }
+            }
     }
 
     private func choose(_ food: FoodType) {

@@ -54,12 +54,6 @@ struct HomeView: View {
 
                     chefStage(short: short, pad: pad)
 
-                    Text("Kids learn food names, veggie facts, and following steps — all offline!")
-                        .font(GameFont.caption(13))
-                        .foregroundColor(GameTheme.navy.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 28)
-
                     CrazyButton(title: "PLAY", icon: "play.fill") {
                         router.go(.foodSelection)
                     }
@@ -115,21 +109,19 @@ struct HomeView: View {
     }
 
     private func chefStage(short: Bool, pad: Bool) -> some View {
-        let chef: CGFloat = pad ? 280 : (short ? 200 : 236)
+        let chef: CGFloat = pad ? 280 : (short ? 210 : 250)
         return ZStack {
-            FactoryLottie(name: .yumStars)
-                .opacity(0.85)
             ChefCharacter(pose: .idle, size: chef, showsSpatula: true)
-            FoodIllustrationView(food: .taco, size: pad ? 78 : 64)
-                .offset(x: pad ? -158 : -128, y: pad ? 18 : 8)
-            FoodIllustrationView(food: .cupcake, size: pad ? 74 : 60)
-                .offset(x: pad ? 158 : 128, y: pad ? 18 : 8)
-            FoodIllustrationView(food: .pasta, size: pad ? 78 : 64)
-                .offset(x: pad ? -150 : -122, y: pad ? 148 : 122)
-            FoodIllustrationView(food: .hotDog, size: pad ? 76 : 62)
-                .offset(x: pad ? 150 : 124, y: pad ? 148 : 122)
+            FoodIllustrationView(food: .pizza, size: pad ? 96 : 82)
+                .offset(x: pad ? -150 : -124, y: pad ? 70 : 56)
+            FoodIllustrationView(food: .burger, size: pad ? 88 : 74)
+                .offset(x: pad ? -148 : -122, y: pad ? 156 : 130)
+            FoodIllustrationView(food: .iceCream, size: pad ? 92 : 78)
+                .offset(x: pad ? 150 : 126, y: pad ? 16 : 8)
+            FoodIllustrationView(food: .donut, size: pad ? 86 : 72)
+                .offset(x: pad ? 150 : 128, y: pad ? 148 : 122)
         }
-        .frame(height: pad ? 340 : (short ? 236 : 280))
+        .frame(height: pad ? 340 : (short ? 250 : 300))
     }
 }
 

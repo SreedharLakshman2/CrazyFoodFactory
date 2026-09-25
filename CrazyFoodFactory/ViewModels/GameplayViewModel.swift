@@ -184,7 +184,7 @@ final class GameplayViewModel: ObservableObject {
             self.sparkleTick += 1
             self.chefPose = .happy
             self.speech = "\(id.displayName)!"
-            self.lastLesson = id.learnLine
+            self.lastLesson = "\(id.displayName)! \(id.kidFactShort)"
             self.advanceIfNeeded(justPlaced: id, announcedName: id.displayName)
             self.maybeRandomChaos()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
