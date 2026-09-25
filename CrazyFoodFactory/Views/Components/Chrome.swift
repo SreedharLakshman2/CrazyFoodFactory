@@ -241,26 +241,18 @@ struct IngredientCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 7) {
-                ZStack {
-                    Circle()
-                        .fill(Color.white)
-                        .shadow(color: Color.black.opacity(0.1), radius: 6, y: 3)
-                    IngredientArt(id: ingredient.id)
-                        .padding(compact ? 11 : 13)
-                    if used {
-                        Circle().fill(Color.white.opacity(0.5))
-                    }
-                }
-                .frame(width: compact ? 64 : 70, height: compact ? 64 : 70)
+            VStack(spacing: 6) {
+                IngredientArt(id: ingredient.id)
+                    .frame(width: compact ? 58 : 64, height: compact ? 58 : 64)
+                    .opacity(used ? 0.45 : 1)
                 Text(ingredient.displayName)
-                    .font(GameFont.caption(12))
+                    .font(GameFont.caption(11))
                     .foregroundColor(GameTheme.navy)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                    .frame(width: compact ? 68 : 74)
+                    .minimumScaleFactor(0.7)
+                    .frame(width: compact ? 64 : 70)
             }
-            .opacity(used && !ingredient.isOptional ? 0.5 : 1)
+            .opacity(used && !ingredient.isOptional ? 0.7 : 1)
         }
         .buttonStyle(PressScaleStyle())
         .accessibilityLabel("\(ingredient.displayName). \(ingredient.kidFact)")
@@ -274,22 +266,31 @@ struct IngredientTray: View {
     var onTap: (IngredientID) -> Void
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: compact ? 10 : 12) {
-                ForEach(ingredients) { item in
-                    IngredientCard(
-                        ingredient: item,
-                        used: placed.contains(item.id) && !item.isOptional && !item.isChaosBait,
-                        compact: compact
-                    ) {
-                        onTap(item.id)
-                    }
+        let cards = HStack(spacing: compact ? 8 : 10) {
+            ForEach(ingredients) { item in
+                IngredientCard(
+                    ingredient: item,
+                    used: placed.contains(item.id) && !item.isOptional && !item.isChaosBait,
+                    compact: compact
+                ) {
+                    onTap(item.id)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 8)
         }
-        .scrollClipDisabled()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+
+        Group {
+            if ingredients.count <= 5 {
+                cards
+                    .frame(maxWidth: .infinity)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    cards
+                }
+                .scrollClipDisabled()
+            }
+        }
         .accessibilityElement(children: .contain)
     }
 }
@@ -413,12 +414,12 @@ struct LevelNode: View {
                         .frame(width: 80, height: 80)
                         .overlay(Circle().stroke(unlocked ? level.nodeFood.accent : Color.white.opacity(0.4), lineWidth: 4))
                         .shadow(color: Color.black.opacity(unlocked ? 0.12 : 0.05), radius: 6, y: 4)
-                    if unlocked {
-                        FoodIllustrationView(food: level.nodeFood, size: 48)
-                    } else {
+                    FoodIllustrationView(food: level.nodeFood, size: 48)
+                        .opacity(unlocked ? 1 : 0.28)
+                    if !unlocked {
                         Image(systemName: "lock.fill")
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(Color.white.opacity(0.9))
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(GameTheme.navy.opacity(0.7))
                     }
                     Text("\(level.id)")
                         .font(GameFont.caption(12))
@@ -556,23 +557,20 @@ struct FrostingPipe: View {
             Capsule()
                 .fill(
                     LinearGradient(
-                        colors: [Color(hex: 0xD5DCE4), Color(hex: 0xB7C0CB)],
+                        colors: [Color(hex: 0xE7EDF3), Color(hex: 0xB7C0CB), Color(hex: 0x9AA6B4)],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
-                .frame(width: 20, height: 44)
+                .frame(width: 16, height: 150)
             Capsule()
-                .fill(Color(hex: 0xA9B3BF))
-                .frame(width: 40, height: 22)
-                .overlay(
-                    Capsule()
-                        .fill(Color(hex: 0xFF8AD4))
-                        .frame(width: 12, height: 10)
-                        .offset(y: 6)
-                )
+                .fill(Color(hex: 0x8E9AAB))
+                .frame(width: 36, height: 20)
+            Capsule()
+                .fill(Color(hex: 0xFF8AD4))
+                .frame(width: 10, height: 14)
+                .offset(y: -2)
         }
-        .shadow(color: Color.black.opacity(0.12), radius: 6, y: 3)
         .accessibilityHidden(true)
     }
 }

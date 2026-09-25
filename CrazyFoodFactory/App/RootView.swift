@@ -10,6 +10,7 @@ struct RootView: View {
             switch router.screen {
             case .splash:
                 SplashView {
+                    guard router.screen == .splash else { return }
                     if store.save.hasSeenHowTo {
                         router.go(.home)
                     } else {
@@ -128,6 +129,16 @@ struct RootView: View {
             if store.sessionCompleted.isEmpty {
                 store.sessionCompleted = store.currentLevel.requiredFoods
             }
+            if store.currentResult == nil {
+                store.currentResult = FoodResult(
+                    food: store.sessionCompleted.first ?? .pizza,
+                    stars: 3,
+                    placed: [],
+                    keptCrazy: false,
+                    title: "Yummy!",
+                    message: "Yummy!"
+                )
+            }
             router.go(.levelComplete)
         case "map":
             router.go(.levelMap)
@@ -166,6 +177,10 @@ struct RootView: View {
         case "icecream", "ice-cream", "ice_cream": return .iceCream
         case "donut", "donuts": return .donut
         case "sandwich": return .sandwich
+        case "taco": return .taco
+        case "pasta": return .pasta
+        case "cupcake": return .cupcake
+        case "hotdog", "hot-dog", "hot_dog": return .hotDog
         default: return FoodType(rawValue: raw)
         }
     }

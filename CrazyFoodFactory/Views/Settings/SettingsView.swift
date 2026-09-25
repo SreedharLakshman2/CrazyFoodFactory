@@ -52,6 +52,12 @@ struct SettingsView: View {
                     }
                     .font(GameFont.headline(16))
                     .foregroundColor(GameTheme.navy)
+                    Button("Level Map") {
+                        dismiss()
+                        router.go(.levelMap)
+                    }
+                    .font(GameFont.headline(16))
+                    .foregroundColor(GameTheme.navy)
                     Button("Privacy Policy") { showPrivacy = true }
                         .font(GameFont.headline(16))
                         .foregroundColor(GameTheme.navy)

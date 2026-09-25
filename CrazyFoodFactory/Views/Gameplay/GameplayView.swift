@@ -17,7 +17,7 @@ struct GameplayView: View {
             ZStack {
                 FactoryBackground(compact: true)
 
-                VStack(spacing: short ? 10 : 14) {
+                VStack(spacing: short ? 12 : 16) {
                     topBar
                     IngredientTray(
                         ingredients: game.definition.ingredients,
@@ -26,12 +26,12 @@ struct GameplayView: View {
                         onTap: game.tapIngredient
                     )
                     if let text = game.lastLesson ?? game.speech, !text.isEmpty {
-                        SpeechBubble(text: text, compact: short)
-                            .padding(.horizontal, 28)
+                        SpeechBubble(text: text, compact: true)
+                            .padding(.horizontal, 36)
                     }
-                    Spacer(minLength: 8)
+                    Spacer(minLength: 10)
                     workstation(short: short, width: geo.size.width)
-                    Spacer(minLength: 12)
+                    Spacer(minLength: 18)
                 }
                 .factoryReadableWidth()
                 .padding(.top, 10)
@@ -96,54 +96,45 @@ struct GameplayView: View {
     }
 
     private func workstation(short: Bool, width: CGFloat) -> some View {
-        let foodSize: CGFloat = short ? 188 : 220
-        let chefSize: CGFloat = short ? 196 : 228
+        let foodSize: CGFloat = short ? 210 : 250
+        let chefSize: CGFloat = short ? 186 : 210
         return ZStack(alignment: .bottom) {
             FactoryTable()
-                .frame(width: short ? 260 : 300, height: short ? 88 : 100)
-                .offset(x: 30, y: -4)
+                .frame(width: min(width * 0.72, 320), height: short ? 78 : 88)
+                .offset(y: -4)
 
-            HStack(alignment: .bottom, spacing: 0) {
-                ChefCharacter(pose: game.chefPose, size: chefSize)
-                    .offset(x: 4, y: 8)
+            FoodIllustrationView(
+                food: game.definition.type,
+                placed: game.placed,
+                melted: game.melted,
+                size: foodSize
+            )
+            .scaleEffect(game.foodBounce ? 1.08 : game.overlayScale)
+            .rotationEffect(.degrees(game.foodSpin ? 360 : 0))
+            .animation(GameAnimations.bounce, value: game.foodBounce)
+            .padding(.bottom, 36)
+            .overlay { SparkleEffect(tick: game.sparkleTick) }
 
-                Spacer(minLength: 0)
-
-                ZStack {
-                    if game.definition.type == .donut {
-                        FrostingPipe()
-                            .offset(y: -foodSize * 0.52)
-                    }
-                    FoodIllustrationView(
-                        food: game.definition.type,
-                        placed: game.placed,
-                        melted: game.melted,
-                        size: foodSize
-                    )
-                    .scaleEffect(game.foodBounce ? 1.08 : game.overlayScale)
-                    .rotationEffect(.degrees(game.foodSpin ? 360 : 0))
-                    .animation(GameAnimations.bounce, value: game.foodBounce)
-                    SparkleEffect(tick: game.sparkleTick)
-                }
-                .padding(.bottom, 36)
-
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 8)
+            ChefCharacter(pose: game.chefPose, size: chefSize)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 4)
+                .offset(y: 8)
 
             if game.definition.ovenIsTrap {
                 Button {
                     game.tapOven()
                 } label: {
                     OvenArt(glowing: game.ovenGlow, meltedInside: game.melted)
-                        .frame(width: short ? 120 : 136, height: short ? 120 : 136)
+                        .frame(width: short ? 96 : 108, height: short ? 96 : 108)
                 }
                 .buttonStyle(PressScaleStyle())
                 .accessibilityLabel("Oven")
-                .offset(x: short ? 142 : 160, y: -10)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.trailing, 8)
+                .offset(y: 6)
             }
         }
-        .frame(height: short ? 268 : 310)
+        .frame(height: short ? 300 : 348)
         .frame(maxWidth: min(width, 540))
     }
 

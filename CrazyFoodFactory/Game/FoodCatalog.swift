@@ -18,9 +18,9 @@ enum FoodCatalog {
 
     private static func pizza(extra: Bool) -> FoodGameDefinition {
         var tray: [Ingredient] = [
-            Ingredient(id: .tomatoSauce),
+            Ingredient(id: .tomato),
             Ingredient(id: .cheese),
-            Ingredient(id: .pepperoni),
+            Ingredient(id: .greenPepper),
             Ingredient(id: .mushroom)
         ]
         tray.append(Ingredient(id: .pineapple, isChaosBait: true, isOptional: true))
@@ -32,22 +32,21 @@ enum FoodCatalog {
             title: FoodType.pizza.taskTitle,
             ingredients: tray,
             steps: [
-                GameStep(id: "sauce", accepted: [.tomatoSauce], hint: "Sauce first!"),
+                GameStep(id: "tomato", accepted: [.tomato], hint: "Tomato first!"),
                 GameStep(id: "cheese", accepted: [.cheese], hint: "Cheesy please!"),
                 GameStep(
                     id: "toppings",
-                    accepted: extra ? [.pepperoni, .mushroom, .onion, .pineapple] : [.pepperoni, .mushroom, .pineapple],
+                    accepted: extra ? [.greenPepper, .mushroom, .onion, .pineapple] : [.greenPepper, .mushroom, .pineapple],
                     minCount: extra ? 2 : 1,
                     chaosIngredients: [.pineapple],
                     hint: "Add toppings!"
-                ),
-                GameStep(id: "oven", accepted: [], isOven: true, hint: "Into the oven!")
+                )
             ],
             prePlaced: [.dough],
-            showsOven: true,
+            showsOven: false,
             ovenIsTrap: false,
             strictOrder: true,
-            checklist: [.dough, .tomatoSauce, .cheese, .pepperoni]
+            checklist: [.tomato, .cheese, .greenPepper, .mushroom]
         )
     }
 

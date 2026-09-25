@@ -24,8 +24,8 @@ struct OvenArt: View {
             ArtImage(name: "ArtOven")
             if meltedInside {
                 ArtImage(name: "ArtMelted")
-                    .scaleEffect(0.34)
-                    .offset(y: 20)
+                    .scaleEffect(0.30)
+                    .offset(y: 12)
             }
         }
         .shadow(color: glowing ? Color.orange.opacity(0.4) : .clear, radius: 16)

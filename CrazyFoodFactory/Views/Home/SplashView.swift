@@ -10,19 +10,21 @@ struct SplashView: View {
             ConfettiView(active: burst)
             VStack(spacing: 18) {
                 Spacer()
-                ZStack {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 42, weight: .bold))
-                        .foregroundColor(.white.opacity(0.5))
-                        .offset(x: -120, y: -30)
-                        .rotationEffect(.degrees(burst ? 50 : 0))
-                    VStack(spacing: -6) {
-                        splashWord("Crazy", Color(hex: 0xFFE14A))
-                        splashWord("Food", Color(hex: 0xFF8A3D))
-                        splashWord("Factory", Color(hex: 0xFF5A8A))
+                Group {
+                    if GameArt.exists("ArtTitleLogo") {
+                        Image("ArtTitleLogo")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 180)
+                    } else {
+                        VStack(spacing: -6) {
+                            splashWord("Crazy", Color(hex: 0xFFE14A))
+                            splashWord("Food", Color(hex: 0xFF8A3D))
+                            splashWord("Factory", Color(hex: 0xFF5A8A))
+                        }
                     }
-                    .scaleEffect(burst ? 1 : 0.72)
                 }
+                .scaleEffect(burst ? 1 : 0.72)
                 ChefCharacter(pose: .celebrating, size: 150, showsSpatula: true)
                     .opacity(burst ? 1 : 0)
                     .offset(y: burst ? 0 : 24)

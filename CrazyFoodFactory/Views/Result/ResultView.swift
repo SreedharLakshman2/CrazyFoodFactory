@@ -8,17 +8,7 @@ struct ResultView: View {
         GeometryReader { geo in
             let short = geo.size.height < 720
             ZStack {
-                LinearGradient(
-                    colors: [Color(hex: 0x7AD4FF), Color(hex: 0xEAF7FF)],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-                ConfettiView()
-                FactoryLottie(name: .yumHearts)
-                    .frame(height: 140)
-                    .allowsHitTesting(false)
-
+                FactoryBackground()
                 VStack(spacing: short ? 14 : 20) {
                     RibbonTitle(text: store.currentResult?.title ?? "Yummy!")
                         .padding(.top, 16)

@@ -8,8 +8,12 @@ struct LevelCompleteView: View {
         GeometryReader { geo in
             let short = geo.size.height < 720
             ZStack {
-                GameTheme.celebrateGradient.ignoresSafeArea()
-                ConfettiView()
+                LinearGradient(
+                    colors: [Color(hex: 0x7AD4FF), Color(hex: 0xFFE56A).opacity(0.55), Color(hex: 0xFFF4EC)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
 
                 VStack(spacing: short ? 14 : 20) {
                     Text("LEVEL\nCOMPLETE!")

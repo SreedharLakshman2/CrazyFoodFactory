@@ -16,31 +16,27 @@ struct ChaosEventView: View {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 10) {
+            VStack(spacing: 12) {
                 if event.type == .penguinVisit {
-                    WarningBanner(text: event.title)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 18)
+                    WarningBanner(text: "Oops! A little chaos!")
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
                 } else {
                     Text(event.title)
-                        .font(GameFont.display(event.title.count > 18 ? 32 : 38))
+                        .font(GameFont.display(event.title.count > 18 ? 34 : 40))
                         .foregroundColor(GameTheme.comicRed)
                         .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.68)
+                        .minimumScaleFactor(0.7)
                         .padding(.horizontal, 16)
-                        .padding(.top, 24)
-
+                        .padding(.top, 28)
                     Text(event.subtitle)
-                        .font(GameFont.title(30))
+                        .font(GameFont.title(28))
                         .foregroundColor(GameTheme.navy)
                 }
 
-                Spacer(minLength: 4)
-
+                Spacer(minLength: 8)
                 scene
-                    .frame(maxHeight: 340)
-
-                Spacer(minLength: 4)
+                Spacer(minLength: 8)
 
                 if event.retry == .keepOrRetry {
                     CrazyButton(title: "KEEP IT CRAZY", icon: "sparkles", kind: .play, action: keep)
@@ -50,13 +46,13 @@ struct ChaosEventView: View {
 
                 CrazyButton(
                     title: event.retry == .continuePlay ? "OOPS!" : "TRY AGAIN",
-                    icon: event.retry == .continuePlay ? "face.smiling" : "arrow.clockwise",
+                    icon: "arrow.clockwise",
                     kind: .retry,
                     action: retry
                 )
                 .factoryButtonWidth()
                 .padding(.horizontal, 36)
-                .padding(.bottom, 20)
+                .padding(.bottom, 22)
             }
             .factoryReadableWidth()
         }
@@ -69,7 +65,7 @@ struct ChaosEventView: View {
         case .penguinVisit:
             return [Color(hex: 0x7AD4FF), Color(hex: 0xD7F2FF), Color.white]
         default:
-            return [Color(hex: 0x6AD0FF), Color(hex: 0xD6F3FF), Color.white]
+            return [Color(hex: 0x8BDCFF), Color(hex: 0xD6F3FF), Color.white]
         }
     }
 
@@ -77,35 +73,30 @@ struct ChaosEventView: View {
     private var scene: some View {
         switch event.type {
         case .pineapplePizza:
-            HStack(alignment: .center, spacing: -8) {
-                ChefCharacter(pose: .falling, size: 230)
-                FoodIllustrationView(food: .pizza, placed: [.pineapple], size: 210)
+            VStack(spacing: 8) {
+                ChefCharacter(pose: .falling, size: 210)
+                FoodIllustrationView(food: .pizza, placed: [.pineapple], size: 220)
             }
-            .padding(.horizontal, 4)
         case .meltedIceCream:
             ZStack(alignment: .bottom) {
                 OvenArt(glowing: true, meltedInside: true)
-                    .frame(width: 250, height: 250)
-                    .offset(y: -18)
-                ChefCharacter(pose: .shocked, size: 148)
-                    .offset(x: -118, y: 18)
+                    .frame(width: 300, height: 300)
+                ChefCharacter(pose: .shocked, size: 140)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 8)
+                    .offset(y: 16)
             }
-            .frame(height: 300)
+            .frame(height: 340)
         case .penguinVisit:
-            ZStack(alignment: .bottom) {
-                Capsule()
-                    .fill(Color.white.opacity(0.92))
-                    .frame(height: 28)
-                    .padding(.horizontal, 36)
-                    .offset(y: -8)
-                    .shadow(color: Color.black.opacity(0.08), radius: 6, y: 3)
-                HStack(alignment: .bottom, spacing: 10) {
-                    PenguinArt().frame(width: 150, height: 176)
-                    FoodIllustrationView(food: food, size: 128)
+            VStack(spacing: 10) {
+                HStack(alignment: .bottom, spacing: 18) {
+                    PenguinArt().frame(width: 170, height: 196)
+                    FoodIllustrationView(food: food, size: 140)
                 }
-                .padding(.bottom, 18)
+                Text("Oops!")
+                    .font(GameFont.title(34))
+                    .foregroundColor(GameTheme.navy)
             }
-            .frame(height: 220)
         default:
             HStack(alignment: .bottom, spacing: 8) {
                 ChefCharacter(pose: event.severity == .dramatic ? .falling : .shocked, size: 168)

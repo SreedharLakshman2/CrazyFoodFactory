@@ -5,6 +5,7 @@ enum IngredientID: String, Codable, CaseIterable, Identifiable, Hashable {
     case tomatoSauce
     case cheese
     case pepperoni
+    case greenPepper
     case mushroom
     case pineapple
     case bun
@@ -49,9 +50,10 @@ enum IngredientID: String, Codable, CaseIterable, Identifiable, Hashable {
     var displayName: String {
         switch self {
         case .dough: return "Dough"
-        case .tomatoSauce: return "Tomato"
+        case .tomatoSauce: return "Sauce"
         case .cheese: return "Cheese"
         case .pepperoni: return "Pepperoni"
+        case .greenPepper: return "Pepper"
         case .mushroom: return "Mushroom"
         case .pineapple: return "Pineapple"
         case .bun, .topBun: return "Bun"
@@ -97,6 +99,7 @@ enum IngredientID: String, Codable, CaseIterable, Identifiable, Hashable {
         case .tomatoSauce, .tomato: return "Tomatoes are juicy fruits used like veggies."
         case .cheese: return "Cheese is made from milk and is full of calcium."
         case .pepperoni: return "A spicy sausage slice for pizza."
+        case .greenPepper: return "Crunchy sweet peppers are full of vitamin C."
         case .mushroom: return "Mushrooms grow in the dark, not on trees."
         case .pineapple: return "A sweet tropical fruit with a spiky coat."
         case .bun, .topBun, .hotdogBun: return "A soft bread bun holds the sandwich."
@@ -137,6 +140,7 @@ enum IngredientID: String, Codable, CaseIterable, Identifiable, Hashable {
         case .tomatoSauce, .tomato: return "Juicy fruit, used like a veggie"
         case .cheese: return "Made from milk. Calcium!"
         case .pepperoni: return "Spicy sausage pizza slice"
+        case .greenPepper: return "Crunchy and full of vitamin C"
         case .mushroom: return "Grows in the dark, yummy"
         case .pineapple: return "Sweet fruit with a spiky coat"
         case .bun, .topBun, .hotdogBun: return "Soft bread that holds lunch"
@@ -180,6 +184,7 @@ enum IngredientID: String, Codable, CaseIterable, Identifiable, Hashable {
         case .tomatoSauce, .tomato, .pepperoni, .cherry, .salsa, .ketchup:
             return Color(hex: 0xFF6B5A)
         case .cheese: return Color(hex: 0xFFE14A)
+        case .greenPepper: return Color(hex: 0x7EE08A)
         case .mushroom, .onion: return Color(hex: 0xE8D7C3)
         case .pineapple: return Color(hex: 0xFFE36B)
         case .patty, .chocolate, .chocolateFrosting, .ham, .tacoBeef, .meatball, .sausage:
