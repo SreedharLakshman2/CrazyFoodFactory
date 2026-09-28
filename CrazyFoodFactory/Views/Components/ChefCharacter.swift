@@ -15,19 +15,23 @@ struct ChefCharacter: View {
     var pose: ChefPose = .idle
     var size: CGFloat = 168
     var showsSpatula: Bool = false
+    @State private var bob = false
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 20)) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
-            let bob = pose == .falling ? 8 : CGFloat(sin(t * 2.1)) * 4
-            ArtImage(name: GameArt.chef(for: pose))
-                .frame(width: size, height: size)
-                .offset(y: bob)
-                .rotationEffect(.degrees(pose == .falling ? -8 : 0))
-                .animation(GameAnimations.chefReaction, value: pose)
-        }
-        .frame(width: size, height: size)
-        .accessibilityLabel(accessibilityText)
+        ArtImage(name: GameArt.chef(for: pose))
+            .frame(width: size, height: size)
+            .offset(y: pose == .falling ? 10 : (bob ? 4 : -3))
+            .rotationEffect(.degrees(pose == .falling ? -8 : 0))
+            .animation(GameAnimations.chefReaction, value: pose)
+            .animation(
+                pose == .falling
+                    ? .default
+                    : .easeInOut(duration: 1.15).repeatForever(autoreverses: true),
+                value: bob
+            )
+            .onAppear { bob = true }
+            .frame(width: size, height: size)
+            .accessibilityLabel(accessibilityText)
     }
 
     private var accessibilityText: String {

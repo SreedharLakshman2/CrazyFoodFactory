@@ -5,6 +5,7 @@ import Foundation
 final class AudioManager: NSObject {
     static let shared = AudioManager()
 
+    private var toneCache: [String: Data] = [:]
     private var players: [AVAudioPlayer] = []
     private var didConfigure = false
     private var musicTimer: Timer?
@@ -12,7 +13,7 @@ final class AudioManager: NSObject {
     private var soundEnabled = true
     private var musicEnabled = true
     private var speechEnabled = true
-    private let speaker = AVSpeechSynthesizer()
+    private var speaker: AVSpeechSynthesizer?
 
     private override init() {
         super.init()
@@ -32,7 +33,7 @@ final class AudioManager: NSObject {
             stopMusic()
         }
         if !speech {
-            speaker.stopSpeaking(at: .immediate)
+            speaker?.stopSpeaking(at: .immediate)
         }
     }
 
@@ -86,14 +87,16 @@ final class AudioManager: NSObject {
     func speak(_ text: String) {
         guard speechEnabled, !text.isEmpty else { return }
         configure()
-        speaker.stopSpeaking(at: .immediate)
+        let synth = speaker ?? AVSpeechSynthesizer()
+        speaker = synth
+        synth.stopSpeaking(at: .immediate)
         let utterance = AVSpeechUtterance(string: text)
         utterance.rate = 0.48
         utterance.pitchMultiplier = 1.18
         utterance.volume = 1
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
             ?? AVSpeechSynthesisVoice(language: "en-GB")
-        speaker.speak(utterance)
+        synth.speak(utterance)
     }
 
     func startMusic() {
@@ -142,16 +145,15 @@ final class AudioManager: NSObject {
     private func chirp(_ frequency: Double, _ duration: TimeInterval, _ volume: Float) {
         guard soundEnabled else { return }
         configure()
-        let sampleRate = 22100.0
-        let count = Int(sampleRate * duration)
-        var samples = [Float](repeating: 0, count: count)
-        let twoPi = 2.0 * Double.pi
-        for i in 0..<count {
-            let t = Double(i) / sampleRate
-            let envelope = Float(sin(Double.pi * t / duration))
-            samples[i] = Float(sin(twoPi * frequency * t)) * envelope * volume
+        let key = "\(Int(frequency))-\(Int(duration * 1000))-\(Int(volume * 100))"
+        let data: Data
+        if let cached = toneCache[key] {
+            data = cached
+        } else {
+            data = Self.wavData(frequency: frequency, duration: duration, volume: volume)
+            toneCache[key] = data
         }
-        guard let player = Self.player(from: samples, sampleRate: sampleRate) else { return }
+        guard let player = try? AVAudioPlayer(data: data) else { return }
         player.play()
         players.append(player)
         players = Array(players.suffix(16))
@@ -161,7 +163,17 @@ final class AudioManager: NSObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + time, execute: work)
     }
 
-    private static func player(from samples: [Float], sampleRate: Double) -> AVAudioPlayer? {
+    private static func wavData(frequency: Double, duration: TimeInterval, volume: Float) -> Data {
+        let sampleRate = 16000.0
+        let count = Int(sampleRate * duration)
+        var samples = [Float](repeating: 0, count: count)
+        let twoPi = 2.0 * Double.pi
+        for i in 0..<count {
+            let t = Double(i) / sampleRate
+            let envelope = Float(sin(Double.pi * t / duration))
+            samples[i] = Float(sin(twoPi * frequency * t)) * envelope * volume
+        }
+
         var data = Data()
         let channels: Int32 = 1
         let bps: Int16 = 16
@@ -193,6 +205,6 @@ final class AudioManager: NSObject {
             var value = Int16(clipped * Float(Int16.max)).littleEndian
             data.append(Data(bytes: &value, count: 2))
         }
-        return try? AVAudioPlayer(data: data)
+        return data
     }
 }

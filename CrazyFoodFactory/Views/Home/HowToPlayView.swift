@@ -37,37 +37,26 @@ struct HowToPlayView: View {
                 }
                 .padding(.horizontal, 20)
 
-                TabView(selection: $page) {
-                    ForEach(Array(pages.enumerated()), id: \.offset) { index, item in
-                        VStack(spacing: 18) {
-                            scene(for: item, index: index)
-                            Text(item.title)
-                                .font(GameFont.title(26))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .multilineTextAlignment(.center)
-                            Text(item.body)
-                                .font(GameFont.body(17))
-                                .foregroundColor(GameTheme.navy.opacity(0.72))
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 8)
+                pageCard(at: page)
+                    .id(page)
+                    .gesture(
+                        DragGesture(minimumDistance: 48).onEnded { value in
+                            if value.translation.width < -48, page < pages.count - 1 {
+                                withAnimation { page += 1 }
+                            } else if value.translation.width > 48, page > 0 {
+                                withAnimation { page -= 1 }
+                            }
                         }
-                        .padding(22)
-                        .background(
-                            RoundedRectangle(cornerRadius: 32, style: .continuous)
-                                .fill(Color.white)
-                        )
-                        .shadow(color: Color.black.opacity(0.08), radius: 12, y: 6)
-                        .padding(.horizontal, 22)
-                        .tag(index)
+                    )
+
+                HStack(spacing: 8) {
+                    ForEach(0..<pages.count, id: \.self) { index in
+                        Circle()
+                            .fill(index == page ? GameTheme.navy : GameTheme.navy.opacity(0.22))
+                            .frame(width: 8, height: 8)
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .always))
+                .padding(.top, 4)
 
                 CrazyButton(
                     title: page == pages.count - 1 ? "LET'S COOK!" : "NEXT",
@@ -87,6 +76,35 @@ struct HowToPlayView: View {
             .padding(.top, 8)
         }
         .statusBarHidden(true)
+    }
+
+    private func pageCard(at index: Int) -> some View {
+        let item = pages[index]
+        return VStack(spacing: 18) {
+            scene(for: item, index: index)
+            Text(item.title)
+                .font(GameFont.title(26))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .multilineTextAlignment(.center)
+            Text(item.body)
+                .font(GameFont.body(17))
+                .foregroundColor(GameTheme.navy.opacity(0.72))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 8)
+        }
+        .padding(22)
+        .background(
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
+                .fill(Color.white)
+        )
+        .shadow(color: Color.black.opacity(0.08), radius: 12, y: 6)
+        .padding(.horizontal, 22)
     }
 
     @ViewBuilder

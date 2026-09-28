@@ -56,6 +56,7 @@ struct RootView: View {
                 SettingsView()
             }
         }
+        .background(FactoryBackground())
         .sheet(isPresented: $router.showSettings) {
             SettingsView()
                 .environmentObject(store)
@@ -69,26 +70,33 @@ struct RootView: View {
             handleDeepLink(url)
         }
         .onAppear {
-            AudioManager.shared.prepare()
-            AudioManager.shared.applySettings(
-                music: store.save.musicEnabled,
-                sound: store.save.soundEnabled,
-                speech: store.save.speechEnabled
-            )
-            applyLaunchArguments()
-            if ProcessInfo.processInfo.arguments.contains("-selftest") {
-                let report = KitchenFlowSelfTest.runAll()
-                let url = FileManager.default.temporaryDirectory.appendingPathComponent("kido-selftest.txt")
-                try? report.write(to: url, atomically: true, encoding: .utf8)
-                print(report)
-                print("SELFTEST_PATH \(url.path)")
+            DispatchQueue.main.async {
+                applyLaunchArguments()
+                AudioManager.shared.prepare()
+                AudioManager.shared.applySettings(
+                    music: false,
+                    sound: store.save.soundEnabled,
+                    speech: store.save.speechEnabled
+                )
+                if ProcessInfo.processInfo.arguments.contains("-selftest") {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                        let report = KitchenFlowSelfTest.runAll()
+                        let url = FileManager.default.temporaryDirectory.appendingPathComponent("kido-selftest.txt")
+                        try? report.write(to: url, atomically: true, encoding: .utf8)
+                        print(report)
+                        print("SELFTEST_PATH \(url.path)")
+                    }
+                }
             }
         }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
+                let allowMusic = store.save.musicEnabled
+                    && router.screen != .splash
+                    && router.screen != .howTo
                 AudioManager.shared.applySettings(
-                    music: store.save.musicEnabled,
+                    music: allowMusic,
                     sound: store.save.soundEnabled,
                     speech: store.save.speechEnabled
                 )

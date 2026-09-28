@@ -63,6 +63,11 @@ struct HomeView: View {
             withAnimation(.spring(response: 0.62, dampingFraction: 0.78)) {
                 appear = true
             }
+            AudioManager.shared.applySettings(
+                music: store.save.musicEnabled,
+                sound: store.save.soundEnabled,
+                speech: store.save.speechEnabled
+            )
         }
     }
 

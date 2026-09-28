@@ -20,7 +20,7 @@
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
-		<string>AccentColor</string>
+		<string>LaunchSky</string>
 	</dict>
 </dict>
 </plist>
