@@ -34,8 +34,8 @@ struct HomeView: View {
 
                     Spacer(minLength: 4)
 
-                    title
-                        .scaleEffect(pad ? 1.12 : (short ? 0.88 : 1))
+                    BrandWordmark(large: !short)
+                        .scaleEffect(pad ? 1.08 : (short ? 0.86 : 1))
 
                     Text(Brand.tagline)
                         .font(GameFont.caption(short ? 13 : 15))
@@ -64,21 +64,6 @@ struct HomeView: View {
                 appear = true
             }
         }
-    }
-
-    private var title: some View {
-        VStack(spacing: -6) {
-            Text("Kido")
-                .font(GameFont.display(62))
-                .foregroundColor(Color(hex: 0xFFE14A))
-                .shadow(color: Color(hex: 0xC48A10).opacity(0.35), radius: 0, y: 3)
-            Text("Chef")
-                .font(GameFont.display(66))
-                .foregroundColor(Color(hex: 0xFF8A3D))
-                .shadow(color: Color(hex: 0xC45A10).opacity(0.28), radius: 0, y: 3)
-        }
-        .accessibilityLabel(Brand.name)
-        .accessibilityAddTraits(.isHeader)
     }
 
     private func chefStage(short: Bool, pad: Bool) -> some View {

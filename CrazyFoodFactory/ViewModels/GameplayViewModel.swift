@@ -62,7 +62,8 @@ final class GameplayViewModel: ObservableObject {
 
     func tapIngredient(_ id: IngredientID) {
         guard phase == .assembling || phase == .readyToCook else { return }
-        guard activeChaos == nil else { return }
+        if let chaos = activeChaos, chaos.retry != .continuePlay { return }
+        if placed.contains(id) { return }
         AudioManager.shared.speakIngredient(id)
 
         if definition.type == .pizza && id == .pineapple {
@@ -80,7 +81,10 @@ final class GameplayViewModel: ObservableObject {
             return
         }
 
-        if !step.accepted.contains(id) {
+        let allowed = definition.strictOrder
+            ? step.accepted
+            : definition.steps.flatMap(\.accepted)
+        if !allowed.contains(id) {
             reject(id, message: definition.strictOrder ? "OOPS!" : "Try another!")
             maybeRandomChaos()
             return
@@ -177,55 +181,80 @@ final class GameplayViewModel: ObservableObject {
 
     private func place(_ id: IngredientID) {
         flying = id
+        placed.append(id)
         AudioManager.shared.ingredient()
         Haptics.light()
         withAnimation(GameAnimations.ingredientFly) {
             foodBounce = true
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
+        sparkleTick += 1
+        chefPose = .happy
+        speech = "\(id.displayName)!"
+        lastLesson = "\(id.displayName)! \(id.kidFactShort)"
+        advanceIfNeeded(justPlaced: id, announcedName: id.displayName)
+        maybeRandomChaos()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) { [weak self] in
             guard let self else { return }
-            self.placed.append(id)
             self.flying = nil
-            self.sparkleTick += 1
-            self.chefPose = .happy
-            self.speech = "\(id.displayName)!"
-            self.lastLesson = "\(id.displayName)! \(id.kidFactShort)"
-            self.advanceIfNeeded(justPlaced: id, announcedName: id.displayName)
-            self.maybeRandomChaos()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                self.foodBounce = false
-                if self.chefPose == .happy && self.phase == .assembling {
-                    self.chefPose = .cooking
-                }
+            self.foodBounce = false
+            if self.chefPose == .happy && self.phase == .assembling {
+                self.chefPose = .cooking
             }
         }
     }
 
     private func advanceIfNeeded(justPlaced id: IngredientID, announcedName: String) {
-        guard let step = currentStep, !step.isOven else { return }
-        let count = placed.filter { step.accepted.contains($0) }.count
-        if count >= step.minCount {
-            stepIndex += 1
-            if let next = currentStep {
-                let hint = next.hint.isEmpty ? "Looking tasty!" : next.hint
-                if next.isOven {
-                    phase = .readyToCook
-                    chefPose = .thumbsUp
-                    if !definition.ovenIsTrap {
-                        startCooking()
-                    }
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.7) { [weak self] in
-                    guard let self else { return }
-                    if self.speech == "\(announcedName)!" {
-                        self.speech = hint
-                    }
-                }
+        while let step = currentStep, !step.isOven {
+            if placedCount(for: stepIndex) >= step.minCount {
+                stepIndex += 1
             } else {
-                completeFood()
+                break
             }
         }
+        if let next = currentStep {
+            let hint = next.hint.isEmpty ? "Looking tasty!" : next.hint
+            if next.isOven {
+                phase = .readyToCook
+                chefPose = .thumbsUp
+                if !definition.ovenIsTrap {
+                    startCooking()
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.7) { [weak self] in
+                guard let self else { return }
+                if self.speech == "\(announcedName)!" {
+                    self.speech = hint
+                }
+            }
+        } else {
+            completeFood()
+        }
         _ = id
+    }
+
+    /// Assigns placed ingredients to earlier steps first so shared toppings
+    /// (two ice-cream scoops, frosting then sprinkles) still count correctly.
+    private func placedCount(for targetStep: Int) -> Int {
+        var claimed: Set<Int> = []
+        for index in 0...targetStep {
+            guard index < definition.steps.count else { break }
+            let step = definition.steps[index]
+            var found = 0
+            for (placedIndex, ingredient) in placed.enumerated() {
+                if claimed.contains(placedIndex) { continue }
+                if step.accepted.contains(ingredient) {
+                    claimed.insert(placedIndex)
+                    found += 1
+                    if index < targetStep && found >= step.minCount {
+                        break
+                    }
+                }
+            }
+            if index == targetStep {
+                return found
+            }
+        }
+        return 0
     }
 
     private func startCooking() {

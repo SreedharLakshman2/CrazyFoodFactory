@@ -76,6 +76,13 @@ struct RootView: View {
                 speech: store.save.speechEnabled
             )
             applyLaunchArguments()
+            if ProcessInfo.processInfo.arguments.contains("-selftest") {
+                let report = KitchenFlowSelfTest.runAll()
+                let url = FileManager.default.temporaryDirectory.appendingPathComponent("kido-selftest.txt")
+                try? report.write(to: url, atomically: true, encoding: .utf8)
+                print(report)
+                print("SELFTEST_PATH \(url.path)")
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             switch phase {

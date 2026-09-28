@@ -138,8 +138,18 @@ struct SpeechBubble: View {
             .padding(.vertical, compact ? 11 : 16)
             .background(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(Color.white)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white, Color(hex: 0xEAF7FF), Color(hex: 0xFFF4D6)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .shadow(color: Color.black.opacity(0.1), radius: 8, y: 4)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(Color.white, lineWidth: 2)
             )
             .overlay(alignment: .bottomLeading) {
                 BubbleTail()
@@ -147,6 +157,9 @@ struct SpeechBubble: View {
                     .frame(width: 18, height: 14)
                     .offset(x: 22, y: 8)
             }
+            .id(text)
+            .transition(.scale.combined(with: .opacity))
+            .animation(.spring(response: 0.42, dampingFraction: 0.7), value: text)
             .accessibilityAddTraits(.isHeader)
     }
 }
@@ -314,8 +327,18 @@ struct LearnFactBanner: View {
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color.white)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white, Color(hex: 0xFFF6D4)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
                 .shadow(color: Color.black.opacity(0.08), radius: 6, y: 3)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.white, lineWidth: 2)
         )
         .padding(.horizontal, 16)
         .accessibilityLabel(text)
@@ -337,7 +360,17 @@ struct TitleChip: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(Capsule().fill(Color.white))
+        .background(
+            Capsule()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white, Color(hex: 0xE8F7FF), Color(hex: 0xFFF4D6)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        )
+        .overlay(Capsule().stroke(Color.white, lineWidth: 2))
         .shadow(color: Color.black.opacity(0.1), radius: 6, y: 3)
         .accessibilityLabel(title)
     }
@@ -460,7 +493,17 @@ struct ResultCard: View {
         .padding(18)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white, Color(hex: 0xF3FBFF)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.white, lineWidth: 2)
         )
         .softCardShadow()
     }
@@ -478,43 +521,24 @@ struct RibbonTitle: View {
     var text: String
 
     var body: some View {
-        Text(text)
-            .font(GameFont.display(30))
-            .foregroundColor(GameTheme.navy)
-            .lineLimit(1)
-            .minimumScaleFactor(0.65)
-            .padding(.horizontal, 28)
-            .padding(.vertical, 14)
-            .frame(maxWidth: .infinity)
-            .background(
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color(hex: 0xFFE56A), Color(hex: 0xFFC93A)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-            )
-            .overlay(
-                Capsule()
-                    .stroke(Color.white.opacity(0.85), lineWidth: 3)
-            )
-            .overlay(alignment: .leading) {
-                Circle()
-                    .fill(Color(hex: 0xF4B430))
-                    .frame(width: 18, height: 18)
-                    .offset(x: 10)
-            }
-            .overlay(alignment: .trailing) {
-                Circle()
-                    .fill(Color(hex: 0xF4B430))
-                    .frame(width: 18, height: 18)
-                    .offset(x: -10)
-            }
-            .shadow(color: Color(hex: 0xC48A10).opacity(0.28), radius: 0, y: 5)
-            .padding(.horizontal, 22)
-            .accessibilityAddTraits(.isHeader)
+        AnimatedTextBanner(
+            text: text,
+            colors: [Color(hex: 0xFFE56A), Color(hex: 0xFFC93A), Color(hex: 0xFF9A3C)],
+            size: 30
+        )
+        .overlay(alignment: .leading) {
+            Circle()
+                .fill(Color(hex: 0xF4B430))
+                .frame(width: 18, height: 18)
+                .offset(x: 10)
+        }
+        .overlay(alignment: .trailing) {
+            Circle()
+                .fill(Color(hex: 0xF4B430))
+                .frame(width: 18, height: 18)
+                .offset(x: -10)
+        }
+        .padding(.horizontal, 22)
     }
 }
 

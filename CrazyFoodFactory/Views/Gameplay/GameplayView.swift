@@ -28,6 +28,7 @@ struct GameplayView: View {
                     if let text = game.lastLesson ?? game.speech, !text.isEmpty {
                         SpeechBubble(text: text, compact: true)
                             .padding(.horizontal, 36)
+                            .animation(.spring(response: 0.42, dampingFraction: 0.7), value: text)
                     }
                     Spacer(minLength: 10)
                     workstation(short: short, width: geo.size.width)

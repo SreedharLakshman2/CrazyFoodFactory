@@ -54,11 +54,10 @@ enum GameArt {
         case .onion: return "IngOnion"
         case .cone: return "IngCone"
         case .vanilla, .scoop: return "IngVanilla"
-        case .vanillaFrosting: return "IngVanilla"
+        case .vanillaFrosting, .strawberryFrosting, .chocolateFrosting, .cupcakeFrosting:
+            return "IngFrosting"
         case .strawberry: return "IngStrawberry"
-        case .strawberryFrosting, .cupcakeFrosting: return "IngFrosting"
         case .chocolate: return "IngChocolate"
-        case .chocolateFrosting: return "IngChocolate"
         case .mint: return "IngMint"
         case .sprinkles, .rainbowCandy: return "IngSprinkles"
         case .cherry: return "IngCherry"

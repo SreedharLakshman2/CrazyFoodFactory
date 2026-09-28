@@ -22,15 +22,16 @@ struct ChaosEventView: View {
                         .padding(.horizontal, 22)
                         .padding(.top, 20)
                 } else {
-                    Text(event.title)
-                        .font(GameFont.display(event.title.count > 18 ? 34 : 40))
-                        .foregroundColor(GameTheme.comicRed)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.7)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 28)
+                    AnimatedTextBanner(
+                        text: event.title,
+                        colors: [Color(hex: 0xFF8A7A), Color(hex: 0xFFE56A)],
+                        textColor: GameTheme.comicRed,
+                        size: event.title.count > 18 ? 26 : 32
+                    )
+                    .padding(.horizontal, 18)
+                    .padding(.top, 20)
                     Text(event.subtitle)
-                        .font(GameFont.title(28))
+                        .font(GameFont.title(26))
                         .foregroundColor(GameTheme.navy)
                 }
 

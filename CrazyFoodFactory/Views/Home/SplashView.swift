@@ -10,11 +10,8 @@ struct SplashView: View {
             ConfettiView(active: burst)
             VStack(spacing: 18) {
                 Spacer()
-                VStack(spacing: -6) {
-                    splashWord("Kido", Color(hex: 0xFFE14A))
-                    splashWord("Chef", Color(hex: 0xFF8A3D))
-                }
-                .scaleEffect(burst ? 1 : 0.72)
+                BrandWordmark(large: false)
+                    .scaleEffect(burst ? 1 : 0.72)
                 ChefCharacter(pose: .celebrating, size: 150, showsSpatula: true)
                     .opacity(burst ? 1 : 0)
                     .offset(y: burst ? 0 : 24)
@@ -34,13 +31,6 @@ struct SplashView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.6, execute: onFinished)
         }
         .accessibilityLabel(Brand.name)
-    }
-
-    private func splashWord(_ text: String, _ color: Color) -> some View {
-        Text(text)
-            .font(GameFont.display(46))
-            .foregroundColor(color)
-            .shadow(color: Color(hex: 0x8D4E12).opacity(0.25), radius: 0, y: 3)
     }
 }
 

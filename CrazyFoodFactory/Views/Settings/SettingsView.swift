@@ -11,83 +11,123 @@ struct SettingsView: View {
     var body: some View {
         ZStack {
             FactoryBackground(compact: true)
-            VStack(spacing: 18) {
+            VStack(spacing: 14) {
                 HStack {
                     BackCircleButton { dismiss() }
                     Spacer()
                     Text("Settings")
                         .font(GameFont.title(28))
-                        .foregroundColor(GameTheme.navy)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(hex: 0x16345C), Color(hex: 0x4EC3FF)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                     Spacer()
                     Color.clear.frame(width: 52, height: 52)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 12)
 
-                VStack(spacing: 14) {
-                    toggleRow(title: "Music", on: store.save.musicEnabled) {
-                        store.setMusic(!store.save.musicEnabled)
-                    }
-                    toggleRow(title: "Sound Effects", on: store.save.soundEnabled) {
-                        store.setSound(!store.save.soundEnabled)
-                    }
-                    toggleRow(title: "Chef Voice", on: store.save.speechEnabled) {
-                        store.setSpeech(!store.save.speechEnabled)
-                    }
-                    Button {
-                        confirmReset = true
-                    } label: {
-                        Text("Reset Progress")
-                            .font(GameFont.headline(20))
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        settingsCard(title: "Kitchen Sounds", icon: "speaker.wave.2.fill", tint: Color(hex: 0x4EC3FF)) {
+                            VStack(spacing: 6) {
+                                soundToggle(
+                                    title: "Music",
+                                    icon: "music.note",
+                                    tint: Color(hex: 0xFF9A3C),
+                                    on: store.save.musicEnabled
+                                ) {
+                                    store.setMusic(!store.save.musicEnabled)
+                                }
+                                soundToggle(
+                                    title: "Sound Effects",
+                                    icon: "sparkles",
+                                    tint: Color(hex: 0x27D36A),
+                                    on: store.save.soundEnabled
+                                ) {
+                                    store.setSound(!store.save.soundEnabled)
+                                }
+                                soundToggle(
+                                    title: "Chef Voice",
+                                    icon: "mouth.fill",
+                                    tint: Color(hex: 0xFF5A8A),
+                                    on: store.save.speechEnabled
+                                ) {
+                                    store.setSpeech(!store.save.speechEnabled)
+                                }
+                            }
+                        }
+
+                        settingsCard(title: "Play & Learn", icon: "fork.knife", tint: Color(hex: 0xFF8A3D)) {
+                            VStack(spacing: 4) {
+                                navRow(title: "How Kids Learn", icon: "lightbulb.fill", tint: Color(hex: 0xFFE14A)) {
+                                    dismiss()
+                                    router.go(.howTo)
+                                }
+                                navRow(title: "Level Map", icon: "map.fill", tint: Color(hex: 0x4EC3FF)) {
+                                    dismiss()
+                                    router.go(.levelMap)
+                                }
+                                navRow(title: "Rewards", icon: "gift.fill", tint: Color(hex: 0xFF5A8A)) {
+                                    dismiss()
+                                    router.go(.rewards)
+                                }
+                            }
+                        }
+
+                        settingsCard(title: "Help", icon: "heart.fill", tint: Color(hex: 0xFF6B8A)) {
+                            VStack(spacing: 4) {
+                                navRow(title: "Privacy Policy", icon: "lock.fill", tint: Color(hex: 0x7AD4FF)) {
+                                    showPrivacy = true
+                                }
+                                navRow(title: "Support", icon: "questionmark.circle.fill", tint: Color(hex: 0x27D36A)) {
+                                    showSupport = true
+                                }
+                            }
+                        }
+
+                        Button {
+                            confirmReset = true
+                        } label: {
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .font(.system(size: 18, weight: .heavy))
+                                Text("Reset Progress")
+                                    .font(GameFont.headline(20))
+                            }
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 60)
+                            .frame(height: 58)
                             .background(
-                                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                                    .fill(LinearGradient(colors: [Color(hex: 0xFF8A7A), GameTheme.dangerRed], startPoint: .top, endPoint: .bottom))
+                                Capsule()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color(hex: 0xFF8A7A), GameTheme.dangerRed],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
                             )
-                    }
-                    .buttonStyle(PressScaleStyle())
-                    .accessibilityLabel("Reset Progress")
+                            .overlay(Capsule().stroke(Color.white.opacity(0.55), lineWidth: 2))
+                            .shadow(color: GameTheme.dangerRed.opacity(0.28), radius: 0, y: 5)
+                        }
+                        .buttonStyle(PressScaleStyle())
+                        .accessibilityLabel("Reset Progress")
+                        .padding(.top, 4)
 
-                    Button("How Kids Learn") {
-                        dismiss()
-                        router.go(.howTo)
+                        Text(Brand.copyright)
+                            .font(GameFont.caption(13))
+                            .foregroundColor(GameTheme.navy.opacity(0.55))
+                            .multilineTextAlignment(.center)
+                            .padding(.bottom, 20)
                     }
-                    .font(GameFont.headline(16))
-                    .foregroundColor(GameTheme.navy)
-                    Button("Level Map") {
-                        dismiss()
-                        router.go(.levelMap)
-                    }
-                    .font(GameFont.headline(16))
-                    .foregroundColor(GameTheme.navy)
-                    Button("Rewards") {
-                        dismiss()
-                        router.go(.rewards)
-                    }
-                    .font(GameFont.headline(16))
-                    .foregroundColor(GameTheme.navy)
-                    Button("Privacy Policy") { showPrivacy = true }
-                        .font(GameFont.headline(16))
-                        .foregroundColor(GameTheme.navy)
-                    Button("Support") { showSupport = true }
-                        .font(GameFont.headline(16))
-                        .foregroundColor(GameTheme.navy)
+                    .padding(.horizontal, 18)
                 }
-                .padding(20)
-                .background(RoundedRectangle(cornerRadius: 30, style: .continuous).fill(Color.white.opacity(0.92)))
-                .padding(.horizontal, 18)
-
-                Text(Brand.copyright)
-                    .font(GameFont.caption(13))
-                    .foregroundColor(GameTheme.navy.opacity(0.6))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
-
-                Spacer()
             }
             .factoryReadableWidth()
-            .padding(.top, 10)
+            .padding(.top, 8)
         }
         .alert("Reset all stars and levels?", isPresented: $confirmReset) {
             Button("Reset", role: .destructive) { store.resetProgress() }
@@ -95,26 +135,104 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showPrivacy) { LegalPage(title: "Privacy Policy", bodyText: LegalCopy.privacy) }
         .sheet(isPresented: $showSupport) { LegalPage(title: "Support", bodyText: LegalCopy.support) }
+        .statusBarHidden(true)
     }
 
-    private func toggleRow(title: String, on: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack {
+    private func settingsCard<Content: View>(
+        title: String,
+        icon: String,
+        tint: Color,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 34, height: 34)
+                    .background(Circle().fill(tint))
                 Text(title)
-                    .font(GameFont.headline(20))
+                    .font(GameFont.headline(18))
+                    .foregroundColor(GameTheme.navy)
+            }
+            content()
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white, Color(hex: 0xF4FBFF)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(Color.white, lineWidth: 3)
+        )
+        .shadow(color: Color(hex: 0x4EC3FF).opacity(0.16), radius: 12, y: 6)
+    }
+
+    private func soundToggle(title: String, icon: String, tint: Color, on: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 36, height: 36)
+                    .background(Circle().fill(tint))
+                Text(title)
+                    .font(GameFont.headline(18))
                     .foregroundColor(GameTheme.navy)
                 Spacer()
                 Text(on ? "ON" : "OFF")
-                    .font(GameFont.title(18))
+                    .font(GameFont.title(16))
                     .foregroundColor(.white)
-                    .frame(width: 84, height: 44)
-                    .background(Capsule().fill(on ? GameTheme.playGreen : Color(hex: 0x90A4AE)))
+                    .frame(width: 72, height: 38)
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: on
+                                        ? [Color(hex: 0x49E57D), Color(hex: 0x1DB954)]
+                                        : [Color(hex: 0xB0BEC5), Color(hex: 0x90A4AE)],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                    )
             }
-            .padding(.horizontal, 8)
-            .frame(height: 64)
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
         }
         .buttonStyle(PressScaleStyle(pressedScale: 0.98))
         .accessibilityLabel("\(title) \(on ? "on" : "off")")
+    }
+
+    private func navRow(title: String, icon: String, tint: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 36, height: 36)
+                    .background(Circle().fill(tint))
+                Text(title)
+                    .font(GameFont.headline(18))
+                    .foregroundColor(GameTheme.navy)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .heavy))
+                    .foregroundColor(GameTheme.navy.opacity(0.35))
+            }
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PressScaleStyle(pressedScale: 0.98))
+        .accessibilityLabel(title)
     }
 }
 

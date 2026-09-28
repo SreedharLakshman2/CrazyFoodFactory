@@ -42,8 +42,14 @@ struct HowToPlayView: View {
                         VStack(spacing: 18) {
                             scene(for: item, index: index)
                             Text(item.title)
-                                .font(GameFont.title(28))
-                                .foregroundColor(GameTheme.navy)
+                                .font(GameFont.title(26))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
                                 .multilineTextAlignment(.center)
                             Text(item.body)
                                 .font(GameFont.body(17))

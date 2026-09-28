@@ -16,11 +16,13 @@ struct LevelCompleteView: View {
                 .ignoresSafeArea()
 
                 VStack(spacing: short ? 14 : 20) {
-                    Text("LEVEL\nCOMPLETE!")
-                        .font(GameFont.display(short ? 38 : 44))
-                        .foregroundColor(GameTheme.navy)
-                        .multilineTextAlignment(.center)
-                        .padding(.top, 10)
+                    AnimatedTextBanner(
+                        text: "LEVEL COMPLETE!",
+                        colors: [Color(hex: 0xFFE56A), Color(hex: 0xFF9A3C)],
+                        size: short ? 28 : 32
+                    )
+                    .padding(.top, 10)
+                    .padding(.horizontal, 18)
 
                     StarRating(filled: max(store.save.stars(for: max(1, store.save.currentLevel - 1)), store.currentResult?.stars ?? 0), size: 42)
 

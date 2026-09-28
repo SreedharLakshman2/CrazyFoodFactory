@@ -104,8 +104,12 @@ enum FoodCatalog {
             ],
             steps: [
                 GameStep(id: "cone", accepted: [.cone], hint: "Pick a cone!"),
-                GameStep(id: "flavor", accepted: extra ? [.vanilla, .strawberry, .chocolate, .mint] : [.vanilla, .strawberry, .chocolate], hint: "Pick a flavor!"),
-                GameStep(id: "scoop2", accepted: extra ? [.vanilla, .strawberry, .chocolate, .mint, .scoop] : [.vanilla, .strawberry, .chocolate, .scoop], hint: "One more scoop!"),
+                GameStep(
+                    id: "scoops",
+                    accepted: extra ? [.vanilla, .strawberry, .chocolate, .mint] : [.vanilla, .strawberry, .chocolate],
+                    minCount: 2,
+                    hint: "Two yummy scoops!"
+                ),
                 GameStep(id: "top", accepted: [.sprinkles, .cherry], hint: "Sprinkle time!")
             ],
             prePlaced: [],
@@ -126,7 +130,7 @@ enum FoodCatalog {
                 Ingredient(id: .strawberryFrosting),
                 Ingredient(id: .vanillaFrosting),
                 Ingredient(id: .sprinkles),
-                Ingredient(id: .rainbowCandy)
+                Ingredient(id: .cherry, isOptional: true)
             ],
             steps: [
                 GameStep(
@@ -136,8 +140,8 @@ enum FoodCatalog {
                 ),
                 GameStep(
                     id: "toppings",
-                    accepted: [.sprinkles, .rainbowCandy],
-                    minCount: extra ? 2 : 1,
+                    accepted: extra ? [.sprinkles, .cherry] : [.sprinkles, .cherry],
+                    minCount: 1,
                     hint: "Tap to add toppings!"
                 )
             ],

@@ -4,8 +4,7 @@ import UIKit
 struct RewardsView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var store: GameStateStore
-    @State private var shareImage: UIImage?
-    @State private var showShare = false
+    @State private var shareItem: ShareItem?
 
     private let columns = [
         GridItem(.flexible(), spacing: 14),
@@ -21,7 +20,13 @@ struct RewardsView: View {
                     Spacer()
                     Text("Rewards")
                         .font(GameFont.title(28))
-                        .foregroundColor(GameTheme.navy)
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                     Spacer()
                     Color.clear.frame(width: 52, height: 52)
                 }
@@ -47,10 +52,8 @@ struct RewardsView: View {
             .padding(.top, 8)
         }
         .statusBarHidden(true)
-        .sheet(isPresented: $showShare) {
-            if let shareImage {
-                ShareSheet(items: [shareImage])
-            }
+        .sheet(item: $shareItem) { item in
+            ShareSheet(items: [item.image])
         }
     }
 
@@ -103,15 +106,9 @@ struct RewardsView: View {
     }
 
     private func share(_ reward: Reward) {
-        let card = RewardShareCard(reward: reward)
-            .frame(width: 1080, height: 1350)
-        let renderer = ImageRenderer(content: card)
-        renderer.scale = 1
-        if let image = renderer.uiImage {
-            shareImage = image
-            showShare = true
-            AudioManager.shared.success()
-        }
+        let image = RewardCardRenderer.image(for: reward)
+        shareItem = ShareItem(image: image)
+        AudioManager.shared.success()
     }
 }
 
@@ -172,16 +169,6 @@ struct RewardShareCard: View {
             .padding(50)
         }
     }
-}
-
-struct ShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }
 
 #Preview {

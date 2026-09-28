@@ -4,8 +4,7 @@ import UIKit
 struct ResultView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var store: GameStateStore
-    @State private var shareImage: UIImage?
-    @State private var showShare = false
+    @State private var shareItem: ShareItem?
 
     var body: some View {
         GeometryReader { geo in
@@ -55,24 +54,32 @@ struct ResultView: View {
         .statusBarHidden(true)
         .onAppear {
             AudioManager.shared.celebrate()
-        }
-        .sheet(isPresented: $showShare) {
-            if let shareImage {
-                ShareSheet(items: [shareImage])
+            if ProcessInfo.processInfo.arguments.contains("-openshare") {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                    shareReward()
+                }
             }
+        }
+        .sheet(item: $shareItem) { item in
+            ShareSheet(items: [item.image])
         }
     }
 
     private func shareReward() {
-        guard let result = store.currentResult else { return }
-        let reward = RewardCatalog.all.first(where: { $0.food == result.food })
-            ?? Reward(id: "food-\(result.food.rawValue)", title: result.title, subtitle: result.message, food: result.food, starsNeeded: 0)
-        let renderer = ImageRenderer(content: RewardShareCard(reward: reward).frame(width: 1080, height: 1350))
-        renderer.scale = 1
-        if let image = renderer.uiImage {
-            shareImage = image
-            showShare = true
-        }
+        let food = store.currentResult?.food ?? store.selectedFood
+        let result = store.currentResult
+        let reward = RewardCatalog.all.first(where: { $0.food == food })
+            ?? Reward(
+                id: "food-\(food.rawValue)",
+                title: result?.title ?? "\(food.displayName) Star",
+                subtitle: result?.message ?? "You cooked \(food.displayName)!",
+                food: food,
+                starsNeeded: 0
+            )
+        let image = RewardCardRenderer.image(for: reward)
+        shareItem = ShareItem(image: image)
+        AudioManager.shared.success()
+        Haptics.success()
     }
 
     private func advance() {
