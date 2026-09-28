@@ -17,7 +17,7 @@ struct HowToPlayView: View {
         ),
         Page(
             title: "Play anywhere, offline",
-            body: "No internet needed. Nine yummy dishes and silly factory chaos — even in the car!",
+            body: "No internet needed. Thirteen yummy dishes and silly kitchen chaos — even in the car!",
             foods: [.pasta, .hotDog, .iceCream]
         )
     ]

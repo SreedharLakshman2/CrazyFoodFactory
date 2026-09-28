@@ -17,6 +17,12 @@ struct HomeView: View {
                         SettingsButton { router.showSettings = true }
                         Spacer()
                         CircleIconButton(
+                            systemName: "gift.fill",
+                            accessibility: "Rewards"
+                        ) {
+                            router.go(.rewards)
+                        }
+                        CircleIconButton(
                             systemName: store.save.musicEnabled ? "music.note" : "speaker.slash.fill",
                             accessibility: store.save.musicEnabled ? "Turn music off" : "Turn music on",
                             dimmed: !store.save.musicEnabled
@@ -61,21 +67,17 @@ struct HomeView: View {
     }
 
     private var title: some View {
-        Group {
-            if GameArt.exists("ArtTitleLogo") {
-                Image("ArtTitleLogo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 168)
-            } else {
-                VStack(spacing: -4) {
-                    Text("Crazy").font(GameFont.display(48)).foregroundColor(Color(hex: 0xFFE14A))
-                    Text("Food").font(GameFont.display(52)).foregroundColor(Color(hex: 0xFF8A3D))
-                    Text("Factory").font(GameFont.display(48)).foregroundColor(Color(hex: 0xFF5A8A))
-                }
-            }
+        VStack(spacing: -6) {
+            Text("Kido")
+                .font(GameFont.display(62))
+                .foregroundColor(Color(hex: 0xFFE14A))
+                .shadow(color: Color(hex: 0xC48A10).opacity(0.35), radius: 0, y: 3)
+            Text("Chef")
+                .font(GameFont.display(66))
+                .foregroundColor(Color(hex: 0xFF8A3D))
+                .shadow(color: Color(hex: 0xC45A10).opacity(0.28), radius: 0, y: 3)
         }
-        .accessibilityLabel("Crazy Food Factory")
+        .accessibilityLabel(Brand.name)
         .accessibilityAddTraits(.isHeader)
     }
 

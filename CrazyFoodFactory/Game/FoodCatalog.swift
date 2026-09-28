@@ -13,6 +13,10 @@ enum FoodCatalog {
         case .pasta: return pasta(extra: extra)
         case .cupcake: return cupcake(extra: extra)
         case .hotDog: return hotDog(extra: extra)
+        case .pancakes: return pancakes(extra: extra)
+        case .salad: return salad(extra: extra)
+        case .smoothie: return smoothie(extra: extra)
+        case .cookies: return cookies(extra: extra)
         }
     }
 
@@ -288,6 +292,119 @@ enum FoodCatalog {
             ovenIsTrap: false,
             strictOrder: true,
             checklist: [.hotdogBun, .sausage, .mustard]
+        )
+    }
+
+    private static func pancakes(extra: Bool) -> FoodGameDefinition {
+        FoodGameDefinition(
+            id: .pancakes,
+            type: .pancakes,
+            title: FoodType.pancakes.taskTitle,
+            ingredients: [
+                Ingredient(id: .bread),
+                Ingredient(id: .vanilla),
+                Ingredient(id: .strawberry),
+                Ingredient(id: .cherry, isOptional: true)
+            ],
+            steps: [
+                GameStep(id: "stack", accepted: [.bread], hint: "Pancake first!"),
+                GameStep(id: "cream", accepted: [.vanilla], hint: "A creamy swirl!"),
+                GameStep(
+                    id: "fruit",
+                    accepted: extra ? [.strawberry, .cherry] : [.strawberry],
+                    minCount: 1,
+                    hint: "Add fruit!"
+                )
+            ],
+            prePlaced: [],
+            showsOven: false,
+            ovenIsTrap: false,
+            strictOrder: true,
+            checklist: [.bread, .vanilla, .strawberry]
+        )
+    }
+
+    private static func salad(extra: Bool) -> FoodGameDefinition {
+        var tray: [Ingredient] = [
+            Ingredient(id: .lettuce),
+            Ingredient(id: .tomato),
+            Ingredient(id: .avocado),
+            Ingredient(id: .cheese)
+        ]
+        if extra { tray.append(Ingredient(id: .onion, isOptional: true)) }
+        return FoodGameDefinition(
+            id: .salad,
+            type: .salad,
+            title: FoodType.salad.taskTitle,
+            ingredients: tray,
+            steps: [
+                GameStep(id: "greens", accepted: [.lettuce], hint: "Start with greens!"),
+                GameStep(id: "veg", accepted: extra ? [.tomato, .avocado, .onion] : [.tomato, .avocado], minCount: 1, hint: "Add veggies!"),
+                GameStep(id: "cheese", accepted: [.cheese], hint: "Cheesy finish!")
+            ],
+            prePlaced: [],
+            showsOven: false,
+            ovenIsTrap: false,
+            strictOrder: true,
+            checklist: [.lettuce, .tomato, .avocado, .cheese]
+        )
+    }
+
+    private static func smoothie(extra: Bool) -> FoodGameDefinition {
+        FoodGameDefinition(
+            id: .smoothie,
+            type: .smoothie,
+            title: FoodType.smoothie.taskTitle,
+            ingredients: [
+                Ingredient(id: .strawberry),
+                Ingredient(id: .vanilla),
+                Ingredient(id: .mint),
+                Ingredient(id: .cherry, isOptional: true)
+            ],
+            steps: [
+                GameStep(id: "fruit", accepted: [.strawberry], hint: "Berries first!"),
+                GameStep(id: "cream", accepted: [.vanilla], hint: "Make it creamy!"),
+                GameStep(
+                    id: "fresh",
+                    accepted: extra ? [.mint, .cherry] : [.mint],
+                    minCount: 1,
+                    hint: "A fresh finish!"
+                )
+            ],
+            prePlaced: [],
+            showsOven: false,
+            ovenIsTrap: false,
+            strictOrder: true,
+            checklist: [.strawberry, .vanilla, .mint]
+        )
+    }
+
+    private static func cookies(extra: Bool) -> FoodGameDefinition {
+        FoodGameDefinition(
+            id: .cookies,
+            type: .cookies,
+            title: FoodType.cookies.taskTitle,
+            ingredients: [
+                Ingredient(id: .dough),
+                Ingredient(id: .chocolate),
+                Ingredient(id: .sprinkles),
+                Ingredient(id: .cherry, isOptional: extra)
+            ],
+            steps: [
+                GameStep(id: "dough", accepted: [.dough], hint: "Soft cookie dough!"),
+                GameStep(id: "chips", accepted: [.chocolate], hint: "Chocolate chips!"),
+                GameStep(
+                    id: "fun",
+                    accepted: extra ? [.sprinkles, .cherry] : [.sprinkles],
+                    minCount: 1,
+                    hint: "Make them fun!"
+                )
+            ],
+            prePlaced: [],
+            showsOven: false,
+            ovenIsTrap: false,
+            strictOrder: true,
+            checklist: [.dough, .chocolate, .sprinkles]
         )
     }
 }

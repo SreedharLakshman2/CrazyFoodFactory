@@ -30,6 +30,9 @@ struct SettingsView: View {
                     toggleRow(title: "Sound Effects", on: store.save.soundEnabled) {
                         store.setSound(!store.save.soundEnabled)
                     }
+                    toggleRow(title: "Chef Voice", on: store.save.speechEnabled) {
+                        store.setSpeech(!store.save.speechEnabled)
+                    }
                     Button {
                         confirmReset = true
                     } label: {
@@ -55,6 +58,12 @@ struct SettingsView: View {
                     Button("Level Map") {
                         dismiss()
                         router.go(.levelMap)
+                    }
+                    .font(GameFont.headline(16))
+                    .foregroundColor(GameTheme.navy)
+                    Button("Rewards") {
+                        dismiss()
+                        router.go(.rewards)
                     }
                     .font(GameFont.headline(16))
                     .foregroundColor(GameTheme.navy)
@@ -135,7 +144,7 @@ struct LegalPage: View {
 
 enum LegalCopy {
     static let privacy = """
-    Crazy Food Factory is made by Sai Laksha Technologies for kids.
+    Kido Chef is made by Sai Laksha Technologies for kids.
 
     The game works completely offline. Progress and sound settings stay on this device. We do not collect personal information, location, or contacts.
 
@@ -143,7 +152,7 @@ enum LegalCopy {
     """
 
     static let support = """
-    Need a hand in the factory?
+    Need a hand in the kitchen?
 
     Open Settings to turn music or sounds on and off, or reset your level progress.
 

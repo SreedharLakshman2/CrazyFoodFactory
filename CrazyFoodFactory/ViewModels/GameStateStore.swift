@@ -70,6 +70,10 @@ final class GameStateStore: ObservableObject {
                 sessionCompleted.append(result.food)
             }
             save.markFood(result.food, level: save.currentLevel, stars: result.stars)
+            save.unlockRewards(for: result.food)
+            persist()
+        } else {
+            save.unlockRewards(for: result.food)
             persist()
         }
     }
@@ -96,7 +100,13 @@ final class GameStateStore: ObservableObject {
     func setMusic(_ on: Bool) {
         save.musicEnabled = on
         persist()
-        AudioManager.shared.applySettings(music: save.musicEnabled, sound: save.soundEnabled)
+        AudioManager.shared.applySettings(music: save.musicEnabled, sound: save.soundEnabled, speech: save.speechEnabled)
+    }
+
+    func setSpeech(_ on: Bool) {
+        save.speechEnabled = on
+        persist()
+        AudioManager.shared.applySettings(music: save.musicEnabled, sound: save.soundEnabled, speech: save.speechEnabled)
     }
 
     func markSeenHowTo() {
@@ -108,6 +118,6 @@ final class GameStateStore: ObservableObject {
     func setSound(_ on: Bool) {
         save.soundEnabled = on
         persist()
-        AudioManager.shared.applySettings(music: save.musicEnabled, sound: save.soundEnabled)
+        AudioManager.shared.applySettings(music: save.musicEnabled, sound: save.soundEnabled, speech: save.speechEnabled)
     }
 }

@@ -10,19 +10,9 @@ struct SplashView: View {
             ConfettiView(active: burst)
             VStack(spacing: 18) {
                 Spacer()
-                Group {
-                    if GameArt.exists("ArtTitleLogo") {
-                        Image("ArtTitleLogo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 180)
-                    } else {
-                        VStack(spacing: -6) {
-                            splashWord("Crazy", Color(hex: 0xFFE14A))
-                            splashWord("Food", Color(hex: 0xFF8A3D))
-                            splashWord("Factory", Color(hex: 0xFF5A8A))
-                        }
-                    }
+                VStack(spacing: -6) {
+                    splashWord("Kido", Color(hex: 0xFFE14A))
+                    splashWord("Chef", Color(hex: 0xFF8A3D))
                 }
                 .scaleEffect(burst ? 1 : 0.72)
                 ChefCharacter(pose: .celebrating, size: 150, showsSpatula: true)
@@ -43,7 +33,7 @@ struct SplashView: View {
             AudioManager.shared.success()
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.6, execute: onFinished)
         }
-        .accessibilityLabel("Crazy Food Factory")
+        .accessibilityLabel(Brand.name)
     }
 
     private func splashWord(_ text: String, _ color: Color) -> some View {

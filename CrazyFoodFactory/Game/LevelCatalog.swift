@@ -1,7 +1,7 @@
 import Foundation
 
 enum LevelCatalog {
-    static let levelCount = 10
+    static let levelCount = 12
     static let maxStars = levelCount * 3
 
     static let all: [LevelDefinition] = [
@@ -11,10 +11,12 @@ enum LevelCatalog {
         LevelDefinition(id: 4, title: "Donut Decor", requiredFoods: [.donut], chaosChance: 0.10, extraIngredients: false),
         LevelDefinition(id: 5, title: "Sandwich Stack", requiredFoods: [.sandwich], chaosChance: 0.10, extraIngredients: false),
         LevelDefinition(id: 6, title: "Taco Truck", requiredFoods: [.taco], chaosChance: 0.12, extraIngredients: false),
-        LevelDefinition(id: 7, title: "Pasta Party", requiredFoods: [.pasta, .pizza], chaosChance: 0.14, extraIngredients: true),
-        LevelDefinition(id: 8, title: "Sweet Shop", requiredFoods: [.cupcake, .donut], chaosChance: 0.16, extraIngredients: true),
-        LevelDefinition(id: 9, title: "Ballpark", requiredFoods: [.hotDog, .burger], chaosChance: 0.18, extraIngredients: true),
-        LevelDefinition(id: 10, title: "Factory Finale", requiredFoods: FoodType.allCases, chaosChance: 0.20, extraIngredients: true)
+        LevelDefinition(id: 7, title: "Pasta Party", requiredFoods: [.pasta], chaosChance: 0.12, extraIngredients: true),
+        LevelDefinition(id: 8, title: "Sweet Shop", requiredFoods: [.cupcake, .cookies], chaosChance: 0.14, extraIngredients: true),
+        LevelDefinition(id: 9, title: "Breakfast Club", requiredFoods: [.pancakes, .smoothie], chaosChance: 0.16, extraIngredients: true),
+        LevelDefinition(id: 10, title: "Garden Bowl", requiredFoods: [.salad], chaosChance: 0.16, extraIngredients: true),
+        LevelDefinition(id: 11, title: "Ballpark", requiredFoods: [.hotDog, .burger], chaosChance: 0.18, extraIngredients: true),
+        LevelDefinition(id: 12, title: "Chef Finale", requiredFoods: FoodType.allCases, chaosChance: 0.20, extraIngredients: true)
     ]
 
     static func level(_ id: Int) -> LevelDefinition {

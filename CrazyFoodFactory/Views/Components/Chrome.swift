@@ -478,33 +478,43 @@ struct RibbonTitle: View {
     var text: String
 
     var body: some View {
-        ZStack {
-            Capsule()
-                .fill(
-                    LinearGradient(
-                        colors: [Color(hex: 0xFFE56A), Color(hex: 0xFFC93A)],
-                        startPoint: .top,
-                        endPoint: .bottom
+        Text(text)
+            .font(GameFont.display(30))
+            .foregroundColor(GameTheme.navy)
+            .lineLimit(1)
+            .minimumScaleFactor(0.65)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity)
+            .background(
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color(hex: 0xFFE56A), Color(hex: 0xFFC93A)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
                     )
-                )
-                .frame(height: 26)
-                .padding(.horizontal, 18)
-                .offset(y: 6)
-                .overlay(alignment: .leading) {
-                    Circle().fill(Color(hex: 0xFFC93A)).frame(width: 16, height: 16).offset(x: 10, y: 6)
-                }
-                .overlay(alignment: .trailing) {
-                    Circle().fill(Color(hex: 0xFFC93A)).frame(width: 16, height: 16).offset(x: -10, y: 6)
-                }
-            Text(text)
-                .font(GameFont.display(36))
-                .foregroundColor(GameTheme.navy)
-                .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.7)
-                .shadow(color: Color.white.opacity(0.7), radius: 0, y: 1)
-        }
-        .padding(.horizontal, 12)
-        .accessibilityAddTraits(.isHeader)
+            )
+            .overlay(
+                Capsule()
+                    .stroke(Color.white.opacity(0.85), lineWidth: 3)
+            )
+            .overlay(alignment: .leading) {
+                Circle()
+                    .fill(Color(hex: 0xF4B430))
+                    .frame(width: 18, height: 18)
+                    .offset(x: 10)
+            }
+            .overlay(alignment: .trailing) {
+                Circle()
+                    .fill(Color(hex: 0xF4B430))
+                    .frame(width: 18, height: 18)
+                    .offset(x: -10)
+            }
+            .shadow(color: Color(hex: 0xC48A10).opacity(0.28), radius: 0, y: 5)
+            .padding(.horizontal, 22)
+            .accessibilityAddTraits(.isHeader)
     }
 }
 

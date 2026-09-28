@@ -97,9 +97,11 @@ struct LevelMapView: View {
 
     private func nodePoints(in size: CGSize) -> [CGPoint] {
         let width = size.width
-        let xs: [CGFloat] = [0.30, 0.70, 0.28, 0.72, 0.32, 0.68, 0.30, 0.74, 0.28, 0.66]
         return (0..<LevelCatalog.levelCount).map { index in
-            CGPoint(x: width * xs[index], y: 78 + CGFloat(index) * 108)
+            CGPoint(
+                x: width * (index.isMultiple(of: 2) ? 0.30 : 0.70),
+                y: 78 + CGFloat(index) * 108
+            )
         }
     }
 }

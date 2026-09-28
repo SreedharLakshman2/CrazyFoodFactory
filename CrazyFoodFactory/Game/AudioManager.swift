@@ -2,7 +2,7 @@ import AVFoundation
 import Foundation
 
 @MainActor
-final class AudioManager {
+final class AudioManager: NSObject {
     static let shared = AudioManager()
 
     private var players: [AVAudioPlayer] = []
@@ -11,79 +11,96 @@ final class AudioManager {
     private var musicStep = 0
     private var soundEnabled = true
     private var musicEnabled = true
+    private var speechEnabled = true
+    private let speaker = AVSpeechSynthesizer()
 
-    private let fileMap: [String: String] = [
-        "button": "button_tap.wav",
-        "ingredient": "ingredient_place.wav",
-        "success": "success.wav",
-        "mistake": "mistake.wav",
-        "chaos": "chaos.wav",
-        "level": "level_complete.wav",
-        "music": "background_music.mp3"
-    ]
-
-    private init() {}
+    private override init() {
+        super.init()
+    }
 
     func prepare() {
         configure()
     }
 
-    func applySettings(music: Bool, sound: Bool) {
+    func applySettings(music: Bool, sound: Bool, speech: Bool = true) {
         soundEnabled = sound
         musicEnabled = music
+        speechEnabled = speech
         if music {
             startMusic()
         } else {
             stopMusic()
         }
+        if !speech {
+            speaker.stopSpeaking(at: .immediate)
+        }
     }
 
     func tap() {
-        playFile(named: fileMap["button"] ?? "")
         chirp(880, 0.05, 0.18)
     }
 
     func ingredient() {
-        playFile(named: fileMap["ingredient"] ?? "")
         chirp(720, 0.06, 0.2)
         delay(0.05) { self.chirp(980, 0.07, 0.18) }
     }
 
     func success() {
-        playFile(named: fileMap["success"] ?? "")
         chirp(660, 0.08, 0.22)
         delay(0.09) { self.chirp(880, 0.1, 0.22) }
         delay(0.2) { self.chirp(1175, 0.16, 0.26) }
     }
 
+    func celebrate() {
+        success()
+        delay(0.22) { self.chirp(1318, 0.1, 0.22) }
+        delay(0.34) { self.chirp(1568, 0.12, 0.24) }
+        delay(0.48) { self.chirp(1760, 0.16, 0.2) }
+        speak("Yay! You did it!")
+    }
+
     func mistake() {
-        playFile(named: fileMap["mistake"] ?? "")
         chirp(280, 0.12, 0.26)
         delay(0.1) { self.chirp(220, 0.14, 0.22) }
     }
 
     func chaos() {
-        playFile(named: fileMap["chaos"] ?? "")
         chirp(380, 0.08, 0.3)
         delay(0.07) { self.chirp(640, 0.09, 0.32) }
         delay(0.16) { self.chirp(490, 0.12, 0.28) }
     }
 
     func levelComplete() {
-        playFile(named: fileMap["level"] ?? "")
-        success()
-        delay(0.28) {
-            self.chirp(1318, 0.12, 0.24)
-            self.chirp(1568, 0.14, 0.22)
-        }
+        celebrate()
+        delay(0.56) { self.chirp(2093, 0.18, 0.2) }
+    }
+
+    func speakIngredient(_ id: IngredientID) {
+        speak("\(id.displayName)! \(id.kidFactShort)")
+    }
+
+    func speakFood(_ food: FoodType) {
+        speak("Let's make \(food.displayName)!")
+    }
+
+    func speak(_ text: String) {
+        guard speechEnabled, !text.isEmpty else { return }
+        configure()
+        speaker.stopSpeaking(at: .immediate)
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.rate = 0.48
+        utterance.pitchMultiplier = 1.18
+        utterance.volume = 1
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+            ?? AVSpeechSynthesisVoice(language: "en-GB")
+        speaker.speak(utterance)
     }
 
     func startMusic() {
         stopMusic()
         guard musicEnabled else { return }
-        playFile(named: fileMap["music"] ?? "", loop: true)
         configure()
-        musicTimer = Timer.scheduledTimer(withTimeInterval: 0.46, repeats: true) { [weak self] _ in
+        musicTimer = Timer.scheduledTimer(withTimeInterval: 0.38, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.tickMusic()
             }
@@ -100,28 +117,14 @@ final class AudioManager {
 
     private func tickMusic() {
         guard musicEnabled else { return }
-        let scale: [Double] = [392, 494, 523, 587, 659, 784]
-        let pattern = [0, 2, 4, 2, 5, 4, 2, 1]
-        let step = pattern[musicStep % pattern.count]
+        let melody: [Double] = [523, 659, 784, 659, 880, 784, 659, 587]
+        let bass: [Double] = [196, 196, 262, 196, 220, 262, 196, 175]
+        let step = musicStep % melody.count
         musicStep += 1
-        chirp(scale[step], 0.12, 0.06)
-    }
-
-    private func playFile(named name: String, loop: Bool = false) {
-        guard !name.isEmpty else { return }
-        let base = (name as NSString).deletingPathExtension
-        let ext = (name as NSString).pathExtension
-        guard let url = Bundle.main.url(forResource: base, withExtension: ext) else { return }
-        do {
-            let player = try AVAudioPlayer(contentsOf: url)
-            player.numberOfLoops = loop ? -1 : 0
-            player.volume = loop ? 0.28 : 0.7
-            player.prepareToPlay()
-            player.play()
-            players.append(player)
-            players = players.filter { $0.isPlaying || loop }
-        } catch {
-            // Missing or unreadable assets must never crash the game.
+        chirp(bass[step], 0.22, 0.045)
+        chirp(melody[step], 0.14, 0.07)
+        if step == 4 {
+            chirp(1046, 0.08, 0.05)
         }
     }
 
@@ -129,7 +132,7 @@ final class AudioManager {
         guard !didConfigure else { return }
         didConfigure = true
         do {
-            try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: [.mixWithOthers])
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             // Audio session setup is optional for the prototype.
@@ -145,13 +148,13 @@ final class AudioManager {
         let twoPi = 2.0 * Double.pi
         for i in 0..<count {
             let t = Double(i) / sampleRate
-            let envelope = Float(1.0 - t / duration)
+            let envelope = Float(sin(Double.pi * t / duration))
             samples[i] = Float(sin(twoPi * frequency * t)) * envelope * volume
         }
         guard let player = Self.player(from: samples, sampleRate: sampleRate) else { return }
         player.play()
         players.append(player)
-        players = Array(players.suffix(12))
+        players = Array(players.suffix(16))
     }
 
     private func delay(_ time: TimeInterval, _ work: @escaping () -> Void) {

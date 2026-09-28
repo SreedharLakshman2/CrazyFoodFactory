@@ -63,6 +63,7 @@ final class GameplayViewModel: ObservableObject {
     func tapIngredient(_ id: IngredientID) {
         guard phase == .assembling || phase == .readyToCook else { return }
         guard activeChaos == nil else { return }
+        AudioManager.shared.speakIngredient(id)
 
         if definition.type == .pizza && id == .pineapple {
             trigger(.pineapplePizza)
@@ -167,6 +168,10 @@ final class GameplayViewModel: ObservableObject {
         case .pasta: return "Noodle dance!"
         case .cupcake: return "Sweet and cute!"
         case .hotDog: return "Ballpark yummy!"
+        case .pancakes: return "Fluffy stack!"
+        case .salad: return "Crunchy fresh!"
+        case .smoothie: return "Sip sip yay!"
+        case .cookies: return "Cookie dance!"
         }
     }
 

@@ -8,8 +8,10 @@ struct GameSave: Codable, Equatable {
     var totalStars: Int
     var musicEnabled: Bool
     var soundEnabled: Bool
+    var speechEnabled: Bool
     var hasSeenTitle: Bool
     var hasSeenHowTo: Bool
+    var unlockedRewardIDs: [String]
 
     static let blank = GameSave(
         currentLevel: 1,
@@ -19,13 +21,16 @@ struct GameSave: Codable, Equatable {
         totalStars: 0,
         musicEnabled: true,
         soundEnabled: true,
+        speechEnabled: true,
         hasSeenTitle: false,
-        hasSeenHowTo: false
+        hasSeenHowTo: false,
+        unlockedRewardIDs: []
     )
 
     enum CodingKeys: String, CodingKey {
         case currentLevel, unlockedLevel, starsByLevel, completedFoodsByLevel
-        case totalStars, musicEnabled, soundEnabled, hasSeenTitle, hasSeenHowTo
+        case totalStars, musicEnabled, soundEnabled, speechEnabled
+        case hasSeenTitle, hasSeenHowTo, unlockedRewardIDs
     }
 
     init(
@@ -36,8 +41,10 @@ struct GameSave: Codable, Equatable {
         totalStars: Int,
         musicEnabled: Bool,
         soundEnabled: Bool,
+        speechEnabled: Bool,
         hasSeenTitle: Bool,
-        hasSeenHowTo: Bool
+        hasSeenHowTo: Bool,
+        unlockedRewardIDs: [String]
     ) {
         self.currentLevel = currentLevel
         self.unlockedLevel = unlockedLevel
@@ -46,8 +53,10 @@ struct GameSave: Codable, Equatable {
         self.totalStars = totalStars
         self.musicEnabled = musicEnabled
         self.soundEnabled = soundEnabled
+        self.speechEnabled = speechEnabled
         self.hasSeenTitle = hasSeenTitle
         self.hasSeenHowTo = hasSeenHowTo
+        self.unlockedRewardIDs = unlockedRewardIDs
     }
 
     init(from decoder: Decoder) throws {
@@ -59,8 +68,10 @@ struct GameSave: Codable, Equatable {
         totalStars = try container.decodeIfPresent(Int.self, forKey: .totalStars) ?? 0
         musicEnabled = try container.decodeIfPresent(Bool.self, forKey: .musicEnabled) ?? true
         soundEnabled = try container.decodeIfPresent(Bool.self, forKey: .soundEnabled) ?? true
+        speechEnabled = try container.decodeIfPresent(Bool.self, forKey: .speechEnabled) ?? true
         hasSeenTitle = try container.decodeIfPresent(Bool.self, forKey: .hasSeenTitle) ?? false
         hasSeenHowTo = try container.decodeIfPresent(Bool.self, forKey: .hasSeenHowTo) ?? false
+        unlockedRewardIDs = try container.decodeIfPresent([String].self, forKey: .unlockedRewardIDs) ?? []
     }
 
     func stars(for level: Int) -> Int {
@@ -97,11 +108,22 @@ struct GameSave: Codable, Equatable {
     mutating func resetProgress() {
         let music = musicEnabled
         let sound = soundEnabled
+        let speech = speechEnabled
         self = .blank
         musicEnabled = music
         soundEnabled = sound
+        speechEnabled = speech
         hasSeenTitle = true
         hasSeenHowTo = true
+    }
+
+    mutating func unlockRewards(for food: FoodType) {
+        var ids = Set(unlockedRewardIDs)
+        ids.insert("food-\(food.rawValue)")
+        for reward in RewardCatalog.all where reward.starsNeeded > 0 && totalStars >= reward.starsNeeded {
+            ids.insert(reward.id)
+        }
+        unlockedRewardIDs = Array(ids).sorted()
     }
 
     private mutating func recalcStars() {

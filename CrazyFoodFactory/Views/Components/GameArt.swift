@@ -30,6 +30,10 @@ enum GameArt {
         case .pasta: return "ArtPasta"
         case .cupcake: return "ArtCupcake"
         case .hotDog: return "ArtHotDog"
+        case .pancakes: return "ArtPancakes"
+        case .salad: return "ArtSalad"
+        case .smoothie: return "ArtSmoothie"
+        case .cookies: return "ArtCookies"
         }
     }
 

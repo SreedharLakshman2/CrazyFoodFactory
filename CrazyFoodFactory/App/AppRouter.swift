@@ -10,6 +10,7 @@ enum AppScreen: Equatable {
     case result
     case levelComplete
     case levelMap
+    case rewards
     case settings
 }
 

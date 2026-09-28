@@ -6,12 +6,7 @@ struct FoodSelectionView: View {
 
     private let featured: [FoodType] = [.pizza, .burger, .iceCream, .donut]
     private let featuredWide: FoodType = .sandwich
-
-    private var extra: [FoodType] {
-        store.currentLevel.requiredFoods.filter { food in
-            !featured.contains(food) && food != featuredWide
-        }
-    }
+    private let extra: [FoodType] = [.taco, .pasta, .cupcake, .hotDog, .pancakes, .salad, .smoothie, .cookies]
 
     var body: some View {
         GeometryReader { geo in
@@ -47,17 +42,15 @@ struct FoodSelectionView: View {
 
                             foodButton(featuredWide, artSize: short ? 110 : 124, wide: true)
 
-                            if !extra.isEmpty {
-                                LazyVGrid(
-                                    columns: [
-                                        GridItem(.flexible(), spacing: 16),
-                                        GridItem(.flexible(), spacing: 16)
-                                    ],
-                                    spacing: 16
-                                ) {
-                                    ForEach(extra) { food in
-                                        foodButton(food, artSize: short ? 90 : 102)
-                                    }
+                            LazyVGrid(
+                                columns: [
+                                    GridItem(.flexible(), spacing: 16),
+                                    GridItem(.flexible(), spacing: 16)
+                                ],
+                                spacing: 16
+                            ) {
+                                ForEach(extra) { food in
+                                    foodButton(food, artSize: short ? 90 : 102)
                                 }
                             }
                         }
@@ -85,6 +78,7 @@ struct FoodSelectionView: View {
 
     private func choose(_ food: FoodType) {
         store.select(food)
+        AudioManager.shared.speakFood(food)
         router.go(.gameplay)
     }
 }

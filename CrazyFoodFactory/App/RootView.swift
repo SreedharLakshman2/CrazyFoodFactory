@@ -50,6 +50,8 @@ struct RootView: View {
                 LevelCompleteView()
             case .levelMap:
                 LevelMapView()
+            case .rewards:
+                RewardsView()
             case .settings:
                 SettingsView()
             }
@@ -68,13 +70,21 @@ struct RootView: View {
         }
         .onAppear {
             AudioManager.shared.prepare()
-            AudioManager.shared.applySettings(music: store.save.musicEnabled, sound: store.save.soundEnabled)
+            AudioManager.shared.applySettings(
+                music: store.save.musicEnabled,
+                sound: store.save.soundEnabled,
+                speech: store.save.speechEnabled
+            )
             applyLaunchArguments()
         }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
-                AudioManager.shared.applySettings(music: store.save.musicEnabled, sound: store.save.soundEnabled)
+                AudioManager.shared.applySettings(
+                    music: store.save.musicEnabled,
+                    sound: store.save.soundEnabled,
+                    speech: store.save.speechEnabled
+                )
             case .inactive, .background:
                 AudioManager.shared.stopMusic()
             default:
@@ -142,6 +152,8 @@ struct RootView: View {
             router.go(.levelComplete)
         case "map":
             router.go(.levelMap)
+        case "rewards":
+            router.go(.rewards)
         case "settings":
             router.showSettings = true
         case "chaos":
@@ -181,6 +193,10 @@ struct RootView: View {
         case "pasta": return .pasta
         case "cupcake": return .cupcake
         case "hotdog", "hot-dog", "hot_dog": return .hotDog
+        case "pancakes", "pancake": return .pancakes
+        case "salad": return .salad
+        case "smoothie": return .smoothie
+        case "cookies", "cookie": return .cookies
         default: return FoodType(rawValue: raw)
         }
     }
