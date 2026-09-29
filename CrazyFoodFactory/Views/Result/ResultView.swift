@@ -10,7 +10,7 @@ struct ResultView: View {
         GeometryReader { geo in
             let short = geo.size.height < 720
             ZStack {
-                FactoryBackground()
+                FactoryBackground(celebrate: true)
                 ConfettiView()
                 VStack(spacing: short ? 14 : 20) {
                     RibbonTitle(text: store.currentResult?.title ?? "Yummy!")

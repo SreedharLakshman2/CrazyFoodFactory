@@ -131,25 +131,43 @@ struct SpeechBubble: View {
 
     var body: some View {
         Text(text)
-            .font(GameFont.headline(compact ? 17 : 23))
-            .foregroundColor(GameTheme.navy)
+            .font(GameFont.headline(compact ? 18 : 24))
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [Color(hex: 0x16345C), Color(hex: 0x2A5A9A), Color(hex: 0xFF6A3C)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
             .multilineTextAlignment(.center)
-            .padding(.horizontal, compact ? 16 : 22)
-            .padding(.vertical, compact ? 11 : 16)
+            .padding(.horizontal, compact ? 18 : 24)
+            .padding(.vertical, compact ? 12 : 16)
             .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [Color.white, Color(hex: 0xEAF7FF), Color(hex: 0xFFF4D6)],
+                            colors: [
+                                Color.white,
+                                Color(hex: 0xE8F8FF),
+                                Color(hex: 0xFFF3B8),
+                                Color(hex: 0xFFD8F0)
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .shadow(color: Color.black.opacity(0.1), radius: 8, y: 4)
+                    .shadow(color: Color(hex: 0xFF9A3C).opacity(0.22), radius: 10, y: 5)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color.white, lineWidth: 2)
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color.white, Color(hex: 0xFFE56A), Color(hex: 0xFFB6E8)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 3
+                    )
             )
             .overlay(alignment: .bottomLeading) {
                 BubbleTail()
@@ -354,7 +372,13 @@ struct TitleChip: View {
             FoodIllustrationView(food: food, size: 28)
             Text(title)
                 .font(GameFont.headline(16))
-                .foregroundColor(GameTheme.navy)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color(hex: 0x16345C), Color(hex: 0xFF7A28)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
         }
@@ -364,14 +388,23 @@ struct TitleChip: View {
             Capsule()
                 .fill(
                     LinearGradient(
-                        colors: [Color.white, Color(hex: 0xE8F7FF), Color(hex: 0xFFF4D6)],
+                        colors: [Color.white, Color(hex: 0xE8F7FF), Color(hex: 0xFFF4D6), Color(hex: 0xFFD8F0)],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
         )
-        .overlay(Capsule().stroke(Color.white, lineWidth: 2))
-        .shadow(color: Color.black.opacity(0.1), radius: 6, y: 3)
+        .overlay(
+            Capsule().stroke(
+                LinearGradient(
+                    colors: [Color.white, Color(hex: 0xFFE56A)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                ),
+                lineWidth: 2
+            )
+        )
+        .shadow(color: Color(hex: 0xFF9A3C).opacity(0.18), radius: 8, y: 4)
         .accessibilityLabel(title)
     }
 }
@@ -477,35 +510,78 @@ struct ResultCard: View {
     let result: FoodResult
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 12) {
+            Text(result.message)
+                .font(GameFont.title(22))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .shadow(color: Color.white.opacity(0.8), radius: 0, y: 1)
             ForEach(checklist, id: \.self) { item in
                 HStack(spacing: 12) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(GameTheme.successGreen)
-                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(hex: 0x49E57D), Color(hex: 0x1DB954)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .font(.system(size: 26, weight: .bold))
+                    IngredientArt(id: item)
+                        .frame(width: 40, height: 40)
                     Text(item.displayName)
-                        .font(GameFont.headline(18))
-                        .foregroundColor(GameTheme.navy)
+                        .font(GameFont.headline(20))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color(hex: 0x16345C), Color(hex: 0x2A5A9A)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                     Spacer()
                 }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white, Color(hex: 0xFFF8E0), Color(hex: 0xE8F8FF)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
             }
         }
         .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(
                     LinearGradient(
-                        colors: [Color.white, Color(hex: 0xF3FBFF)],
-                        startPoint: .top,
-                        endPoint: .bottom
+                        colors: [Color.white, Color(hex: 0xE8F7FF), Color(hex: 0xFFF4D6), Color(hex: 0xFFE7F2)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
                     )
                 )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.white, lineWidth: 2)
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.white, Color(hex: 0xFFE56A), Color(hex: 0xFFB6E8)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 3
+                )
         )
-        .softCardShadow()
+        .shadow(color: Color(hex: 0xFF8A3D).opacity(0.2), radius: 14, y: 8)
     }
 
     private var checklist: [IngredientID] {
