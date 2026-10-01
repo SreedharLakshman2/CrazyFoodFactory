@@ -162,21 +162,7 @@ final class GameplayViewModel: ObservableObject {
     }
 
     private var positiveMessage: String {
-        switch definition.type {
-        case .pizza: return "Looking tasty!"
-        case .burger: return "Burger jump!"
-        case .iceCream: return "Cool and yummy!"
-        case .donut: return "YUMMY!"
-        case .sandwich: return "Stacked perfectly!"
-        case .taco: return "Taco fiesta!"
-        case .pasta: return "Noodle dance!"
-        case .cupcake: return "Sweet and cute!"
-        case .hotDog: return "Ballpark yummy!"
-        case .pancakes: return "Fluffy stack!"
-        case .salad: return "Crunchy fresh!"
-        case .smoothie: return "Sip sip yay!"
-        case .cookies: return "Cookie dance!"
-        }
+        definition.type.yumLine
     }
 
     private func place(_ id: IngredientID) {

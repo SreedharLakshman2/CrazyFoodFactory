@@ -4,10 +4,6 @@ struct FoodSelectionView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var store: GameStateStore
 
-    private let featured: [FoodType] = [.pizza, .burger, .iceCream, .donut]
-    private let featuredWide: FoodType = .sandwich
-    private let extra: [FoodType] = [.taco, .pasta, .cupcake, .hotDog, .pancakes, .salad, .smoothie, .cookies]
-
     var body: some View {
         GeometryReader { geo in
             let short = geo.size.height < 720
@@ -23,35 +19,13 @@ struct FoodSelectionView: View {
                     .padding(.top, 8)
 
                     SpeechBubble(text: "What do you want\nto make today?")
-                        .padding(.top, 14)
-                        .padding(.bottom, short ? 14 : 20)
+                        .padding(.top, 10)
+                        .padding(.bottom, short ? 10 : 16)
 
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: 16) {
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible(), spacing: 16),
-                                    GridItem(.flexible(), spacing: 16)
-                                ],
-                                spacing: 16
-                            ) {
-                                ForEach(featured) { food in
-                                    foodButton(food, artSize: short ? 98 : 112)
-                                }
-                            }
-
-                            foodButton(featuredWide, artSize: short ? 110 : 124, wide: true)
-
-                            LazyVGrid(
-                                columns: [
-                                    GridItem(.flexible(), spacing: 16),
-                                    GridItem(.flexible(), spacing: 16)
-                                ],
-                                spacing: 16
-                            ) {
-                                ForEach(extra) { food in
-                                    foodButton(food, artSize: short ? 90 : 102)
-                                }
+                        VStack(alignment: .leading, spacing: 18) {
+                            ForEach(FoodKitchen.allCases) { kitchen in
+                                kitchenSection(kitchen, short: short)
                             }
                         }
                         .padding(.horizontal, 22)
@@ -62,6 +36,27 @@ struct FoodSelectionView: View {
             }
         }
         .statusBarHidden(true)
+    }
+
+    private func kitchenSection(_ kitchen: FoodKitchen, short: Bool) -> some View {
+        let foods = FoodType.foods(in: kitchen)
+        return VStack(alignment: .leading, spacing: 10) {
+            Text(kitchen.title)
+                .font(GameFont.headline(18))
+                .foregroundColor(GameTheme.navy)
+                .padding(.leading, 4)
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(), spacing: 14),
+                    GridItem(.flexible(), spacing: 14)
+                ],
+                spacing: 14
+            ) {
+                ForEach(foods) { food in
+                    foodButton(food, artSize: short ? 86 : 98)
+                }
+            }
+        }
     }
 
     private func foodButton(_ food: FoodType, artSize: CGFloat, wide: Bool = false) -> some View {

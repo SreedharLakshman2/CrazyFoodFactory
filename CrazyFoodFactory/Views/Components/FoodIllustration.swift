@@ -13,9 +13,11 @@ struct FoodIllustrationView: View {
                 ArtImage(name: "ArtMelted")
             } else if food == .donut {
                 donutBuild
-            } else {
+            } else if GameArt.exists(GameArt.food(food, pineapple: food == .pizza && placed.contains(.pineapple), melted: melted)) {
                 let pineapple = food == .pizza && placed.contains(.pineapple)
                 ArtImage(name: GameArt.food(food, pineapple: pineapple, melted: melted))
+            } else {
+                FoodPlatePlaceholder(food: food, size: size)
             }
         }
         .frame(width: size, height: size)
@@ -47,6 +49,43 @@ struct FoodIllustrationView: View {
             }
         }
         .animation(.spring(response: 0.42, dampingFraction: 0.72), value: placed)
+    }
+}
+
+struct FoodPlatePlaceholder: View {
+    let food: FoodType
+    var size: CGFloat = 140
+
+    private var bits: [IngredientID] {
+        Array(
+            FoodCatalog.definition(
+                for: food,
+                level: LevelCatalog.level(1)
+            ).checklist.prefix(3)
+        )
+    }
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white, food.cardColor, food.accent.opacity(0.35)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+            Circle()
+                .stroke(Color.white, lineWidth: max(3, size * 0.04))
+            HStack(spacing: -size * 0.08) {
+                ForEach(bits, id: \.self) { id in
+                    IngredientArt(id: id)
+                        .frame(width: size * 0.38, height: size * 0.38)
+                }
+            }
+        }
+        .shadow(color: food.accent.opacity(0.22), radius: 8, y: 4)
+        .accessibilityHidden(true)
     }
 }
 

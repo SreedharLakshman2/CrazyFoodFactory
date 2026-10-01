@@ -18,10 +18,16 @@ struct RootView: View {
                     }
                 }
             case .howTo:
-                HowToPlayView {
-                    store.markSeenHowTo()
-                    router.go(.home)
-                }
+                HowToPlayView(
+                    onFinished: {
+                        store.markSeenHowTo()
+                        router.go(.home)
+                    },
+                    onOpenSchool: {
+                        store.markSeenHowTo()
+                        router.go(.ingredientSchool)
+                    }
+                )
             case .home:
                 HomeView()
             case .foodSelection:
@@ -52,6 +58,8 @@ struct RootView: View {
                 LevelMapView()
             case .rewards:
                 RewardsView()
+            case .ingredientSchool:
+                IngredientSchoolView()
             case .settings:
                 SettingsView()
             }
@@ -129,8 +137,10 @@ struct RootView: View {
 
     private func handleDeepLink(_ url: URL) {
         switch url.host {
-        case "howto", "learn", "onboard":
+        case "howto", "onboard":
             router.go(.howTo)
+        case "learn", "ingredients", "school":
+            router.go(.ingredientSchool)
         case "home":
             router.go(.home)
         case "select", "foods":
@@ -212,6 +222,25 @@ struct RootView: View {
         case "salad": return .salad
         case "smoothie": return .smoothie
         case "cookies", "cookie": return .cookies
+        case "dosa": return .dosa
+        case "idli": return .idli
+        case "sambar": return .sambar
+        case "vada": return .vada
+        case "biryani": return .biryani
+        case "paneertikka", "paneer-tikka", "paneer_tikka": return .paneerTikka
+        case "naanwrap", "naan-wrap", "naan_wrap", "naan": return .naanWrap
+        case "chole": return .chole
+        case "palak", "palakpaneer": return .palak
+        case "mangolassi", "mango-lassi", "mango_lassi", "lassi": return .mangoLassi
+        case "nachos", "nacho": return .nachos
+        case "quesadilla": return .quesadilla
+        case "burrito": return .burrito
+        case "guacamole", "guac": return .guacamole
+        case "elote": return .elote
+        case "ramen": return .ramen
+        case "sushi", "sushiroll", "sushi-roll": return .sushiRoll
+        case "falafel": return .falafel
+        case "hummus": return .hummus
         default: return FoodType(rawValue: raw)
         }
     }

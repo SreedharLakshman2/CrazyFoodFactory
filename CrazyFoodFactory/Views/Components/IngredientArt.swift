@@ -12,10 +12,16 @@ struct IngredientArt: View {
             if let name = GameArt.ingredient(id), GameArt.exists(name) {
                 ArtImage(name: name)
                     .colorMultiply(isFrosting ? frostingTint : .white)
+            } else if let emoji = clayEmoji {
+                Text(emoji)
+                    .font(.system(size: 34))
             } else {
-                Image(systemName: "fork.knife")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundColor(GameTheme.navy.opacity(0.35))
+                ZStack {
+                    Circle().fill(id.trayColor)
+                    Text(String(id.displayName.prefix(1)))
+                        .font(GameFont.headline(18))
+                        .foregroundColor(GameTheme.navy)
+                }
             }
         }
         .accessibilityHidden(true)
@@ -36,6 +42,33 @@ struct IngredientArt: View {
         case .vanillaFrosting: return Color(hex: 0xFFE9A8)
         case .strawberryFrosting, .cupcakeFrosting: return Color(hex: 0xFF6AA8)
         default: return .white
+        }
+    }
+
+    private var clayEmoji: String? {
+        switch id {
+        case .potato: return "🥔"
+        case .rice: return "🍚"
+        case .mango: return "🥭"
+        case .yogurt: return "🥛"
+        case .coconut, .coconutChutney: return "🥥"
+        case .paneer: return "🧀"
+        case .chickpeas: return "🫘"
+        case .corn: return "🌽"
+        case .lime: return "🍋"
+        case .egg: return "🥚"
+        case .nori: return "🍙"
+        case .cucumber: return "🥒"
+        case .chips: return "🌮"
+        case .falafel: return "🧆"
+        case .hummus: return "🥣"
+        case .dosa: return "🥞"
+        case .idli: return "⚪"
+        case .vada: return "🍩"
+        case .naan: return "🫓"
+        case .sambar: return "🍲"
+        case .spinach: return "🥬"
+        default: return nil
         }
     }
 }

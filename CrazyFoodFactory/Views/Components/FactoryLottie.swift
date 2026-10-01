@@ -91,7 +91,7 @@ struct KidMotionFallback: View {
 }
 
 struct YummyFoodParade: View {
-    private let foods: [FoodType] = [.pizza, .taco, .burger, .cupcake, .pasta, .iceCream, .donut, .hotDog, .sandwich, .pancakes, .salad, .smoothie, .cookies]
+    private let foods: [FoodType] = [.pizza, .dosa, .taco, .biryani, .burger, .burrito, .cupcake, .mangoLassi, .ramen, .donut]
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1 / 24)) { timeline in

@@ -14,7 +14,7 @@ struct LevelMapView: View {
                     ScrollView(showsIndicators: false) {
                         let mapSize = CGSize(
                             width: FactoryLayout.contentWidth(in: geo.size),
-                            height: max(1180, geo.size.height * 1.15)
+                            height: max(2400, 90 + CGFloat(LevelCatalog.levelCount) * 108)
                         )
                         ZStack {
                             path(in: mapSize)

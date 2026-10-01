@@ -64,6 +64,10 @@ struct SettingsView: View {
                             VStack(spacing: 4) {
                                 navRow(title: "How Kids Learn", icon: "lightbulb.fill", tint: Color(hex: 0xFFE14A)) {
                                     dismiss()
+                                    router.go(.ingredientSchool)
+                                }
+                                navRow(title: "How To Play", icon: "hand.tap.fill", tint: Color(hex: 0xFF8A3D)) {
+                                    dismiss()
                                     router.go(.howTo)
                                 }
                                 navRow(title: "Level Map", icon: "map.fill", tint: Color(hex: 0x4EC3FF)) {

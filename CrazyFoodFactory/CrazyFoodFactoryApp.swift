@@ -13,7 +13,7 @@ struct CrazyFoodFactoryApp: App {
                 .dynamicTypeSize(.medium ... .accessibility3)
                 .persistentSystemOverlays(.hidden)
                 .statusBarHidden(true)
-                .background(Color(red: 0.361, green: 0.784, blue: 1).ignoresSafeArea())
+                .background(Brand.cream.ignoresSafeArea())
         }
     }
 }

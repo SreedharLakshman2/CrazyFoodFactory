@@ -21,6 +21,7 @@ enum RewardCatalog {
         Reward(id: "stars-5", title: "Rising Chef", subtitle: "5 stars in the kitchen!", food: nil, starsNeeded: 5),
         Reward(id: "stars-12", title: "Kitchen Hero", subtitle: "12 shiny stars!", food: nil, starsNeeded: 12),
         Reward(id: "stars-21", title: "Master Mixer", subtitle: "21 stars. Wow!", food: nil, starsNeeded: 21),
-        Reward(id: "stars-30", title: "Kido Legend", subtitle: "30 stars. Super chef!", food: nil, starsNeeded: 30)
+        Reward(id: "stars-30", title: "Kido Legend", subtitle: "30 stars. Super chef!", food: nil, starsNeeded: 30),
+        Reward(id: "stars-45", title: "World Cook", subtitle: "45 stars around the world!", food: nil, starsNeeded: 45)
     ]
 }

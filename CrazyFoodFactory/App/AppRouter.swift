@@ -12,6 +12,7 @@ enum AppScreen: Equatable {
     case levelMap
     case rewards
     case settings
+    case ingredientSchool
 }
 
 @MainActor

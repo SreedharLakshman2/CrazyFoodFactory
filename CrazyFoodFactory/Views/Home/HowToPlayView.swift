@@ -2,23 +2,24 @@ import SwiftUI
 
 struct HowToPlayView: View {
     var onFinished: () -> Void
+    var onOpenSchool: (() -> Void)? = nil
     @State private var page = 0
 
     private let pages: [Page] = [
         Page(
             title: "Kids learn by cooking!",
             body: "Tap foods in the right order. Little chefs practice steps, patience, and trying again.",
-            foods: [.pizza, .taco, .burger, .cupcake]
+            foods: [.pizza, .dosa, .taco, .burger]
         ),
         Page(
             title: "Meet every ingredient",
-            body: "Each veggie and topping has a name and a tiny fact, so kids learn what they are eating.",
-            foods: [.sandwich, .donut]
+            body: "Open Ingredient School to learn what each food is and how chefs use it — tomato, paneer, mango, and more.",
+            foods: [.sandwich, .idli]
         ),
         Page(
-            title: "Play anywhere, offline",
-            body: "No internet needed. Thirteen yummy dishes and silly kitchen chaos — even in the car!",
-            foods: [.pasta, .hotDog, .iceCream]
+            title: "Kitchens around the world",
+            body: "Cook South Indian, Indian, Mexican, and classic treats. All offline — even in the car!",
+            foods: [.biryani, .burrito, .mangoLassi]
         )
     ]
 
@@ -97,6 +98,21 @@ struct HowToPlayView: View {
                 .foregroundColor(GameTheme.navy.opacity(0.72))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 8)
+            if index == 1, onOpenSchool != nil {
+                Button {
+                    AudioManager.shared.tap()
+                    onOpenSchool?()
+                } label: {
+                    Text("See ingredients!")
+                        .font(GameFont.headline(16))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 10)
+                        .background(Capsule().fill(Color(hex: 0xFF8A3D)))
+                }
+                .buttonStyle(PressScaleStyle())
+                .accessibilityLabel("See ingredients")
+            }
         }
         .padding(22)
         .background(
