@@ -39,7 +39,7 @@ struct IngredientSchoolView: View {
                 if let selected {
                     IngredientLessonSheet(
                         id: selected,
-                        maxHeight: min(geo.size.height * 0.78, 640)
+                        maxHeight: min(geo.size.height * 0.82, 720)
                     ) {
                         closeLesson()
                     }
@@ -184,127 +184,22 @@ struct IngredientLessonSheet: View {
                 .accessibilityLabel("Close lesson")
 
             VStack(spacing: 0) {
-                Capsule()
-                    .fill(Color(hex: 0x16345C).opacity(0.22))
-                    .frame(width: 44, height: 5)
-                    .padding(.top, 10)
-                    .padding(.bottom, 8)
-                    .frame(maxWidth: .infinity)
-                    .contentShape(Rectangle())
-                    .gesture(dismissDrag)
+                sheetChrome
 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 12) {
-                        IngredientArt(id: id)
-                            .frame(width: 108, height: 108)
-                            .padding(16)
-                            .background(
-                                Circle().fill(
-                                    LinearGradient(
-                                        colors: [Color.white, id.trayColor.opacity(0.45)],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                )
-                            )
-                            .overlay(Circle().stroke(Color.white, lineWidth: 3))
-                            .shadow(color: id.trayColor.opacity(0.35), radius: 10, y: 6)
-
-                        Text(id.displayName)
-                            .font(GameFont.title(30))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color(hex: 0x16345C), Color(hex: 0xFF7A28)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-
-                        Text(id.kidFact)
-                            .font(GameFont.body(17))
-                            .foregroundColor(GameTheme.navy)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 8)
-
-                        Text(id.cookingUse)
-                            .font(GameFont.headline(16))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 8)
-
-                        if !dishes.isEmpty {
-                            VStack(spacing: 8) {
-                                Text("Kids cook it in")
-                                    .font(GameFont.caption(13))
-                                    .foregroundColor(GameTheme.navy.opacity(0.7))
-                                ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 12) {
-                                        ForEach(dishes) { food in
-                                            VStack(spacing: 6) {
-                                                FoodIllustrationView(food: food, size: 56)
-                                                Text(food.displayName)
-                                                    .font(GameFont.caption(12))
-                                                    .foregroundColor(GameTheme.navy)
-                                                    .lineLimit(1)
-                                            }
-                                            .frame(width: 78)
-                                        }
-                                    }
-                                    .padding(.horizontal, 4)
-                                }
-                            }
-                        }
+                if maxHeight < 560 {
+                    ScrollView(showsIndicators: false) {
+                        lessonStack(flexible: false)
                     }
-                    .padding(.horizontal, 22)
-                    .padding(.bottom, 8)
+                } else {
+                    lessonStack(flexible: true)
+                        .frame(maxHeight: .infinity)
                 }
 
-                CrazyButton(
-                    title: hearTitle,
-                    icon: hearIcon,
-                    kind: audio.isSpeaking && !audio.isPaused ? .home : .play
-                ) {
-                    audio.toggleSpeech(id.schoolLesson)
-                }
-                .factoryButtonWidth()
-                .padding(.horizontal, 28)
-                .padding(.top, 8)
-
-                Button("Close") { onClose() }
-                    .font(GameFont.headline(16))
-                    .foregroundColor(GameTheme.navy.opacity(0.7))
-                    .padding(.top, 8)
-                    .padding(.bottom, 18)
+                actionButtons
             }
             .frame(maxWidth: .infinity)
             .frame(maxHeight: maxHeight)
-            .background(
-                UnevenRoundedRectangle(
-                    topLeadingRadius: 36,
-                    bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: 36,
-                    style: .continuous
-                )
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white,
-                            Color(hex: 0xE8F7FF),
-                            Color(hex: 0xFFF8E8)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .shadow(color: Color(hex: 0x16345C).opacity(0.22), radius: 18, y: -6)
-            )
+            .background(sheetBackground)
             .overlay(alignment: .top) {
                 UnevenRoundedRectangle(
                     topLeadingRadius: 36,
@@ -323,6 +218,190 @@ struct IngredientLessonSheet: View {
         .onDisappear {
             AudioManager.shared.stopSpeech()
         }
+    }
+
+    private var sheetChrome: some View {
+        HStack {
+            Color.clear.frame(width: 52, height: 52)
+            Spacer()
+            Capsule()
+                .fill(Color(hex: 0x16345C).opacity(0.22))
+                .frame(width: 44, height: 5)
+            Spacer()
+            CircleIconButton(systemName: "xmark", accessibility: "Close") {
+                onClose()
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
+        .contentShape(Rectangle())
+        .gesture(dismissDrag)
+    }
+
+    @ViewBuilder
+    private func lessonStack(flexible: Bool) -> some View {
+        VStack(spacing: 0) {
+            if flexible { Spacer(minLength: 8) }
+            IngredientArt(id: id)
+                .frame(width: 148, height: 148)
+                .padding(18)
+                .background(
+                    Circle().fill(
+                        LinearGradient(
+                            colors: [Color.white, id.trayColor.opacity(0.5)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                )
+                .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                .shadow(color: id.trayColor.opacity(0.35), radius: 12, y: 8)
+
+            if flexible { Spacer(minLength: 10) } else { Color.clear.frame(height: 14) }
+
+            Text(id.displayName)
+                .font(GameFont.title(34))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color(hex: 0x16345C), Color(hex: 0xFF7A28)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+
+            VStack(spacing: 8) {
+                Text(id.kidFact)
+                    .font(GameFont.body(18))
+                    .foregroundColor(GameTheme.navy)
+                    .multilineTextAlignment(.center)
+                Text(id.cookingUse)
+                    .font(GameFont.headline(17))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 18)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Color.white.opacity(0.86))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(Color.white, lineWidth: 2)
+            )
+            .padding(.top, 12)
+
+            if flexible { Spacer(minLength: 12) } else { Color.clear.frame(height: 16) }
+
+            if !dishes.isEmpty {
+                dishesCard
+            }
+
+            if flexible { Spacer(minLength: 16) } else { Color.clear.frame(height: 8) }
+        }
+        .padding(.horizontal, 22)
+    }
+
+    private var dishesCard: some View {
+        VStack(spacing: 12) {
+            Text("Kids cook it in")
+                .font(GameFont.caption(14))
+                .foregroundColor(GameTheme.navy.opacity(0.7))
+            if dishes.count <= 3 {
+                HStack(spacing: 12) {
+                    ForEach(dishes) { food in
+                        dishChip(food)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+            } else {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible(), spacing: 10),
+                        GridItem(.flexible(), spacing: 10),
+                        GridItem(.flexible(), spacing: 10)
+                    ],
+                    spacing: 10
+                ) {
+                    ForEach(dishes) { food in
+                        dishChip(food)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 16)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.white.opacity(0.9))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .stroke(Color.white, lineWidth: 2)
+        )
+    }
+
+    private func dishChip(_ food: FoodType) -> some View {
+        VStack(spacing: 8) {
+            FoodIllustrationView(food: food, size: 76)
+            Text(food.displayName)
+                .font(GameFont.caption(13))
+                .foregroundColor(GameTheme.navy)
+                .lineLimit(1)
+        }
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(food.cardColor.opacity(0.55))
+        )
+    }
+
+    private var actionButtons: some View {
+        VStack(spacing: 10) {
+            CrazyButton(
+                title: hearTitle,
+                icon: hearIcon
+            ) {
+                audio.toggleSpeech(id.schoolLesson)
+            }
+            CrazyButton(title: "CLOSE", icon: "xmark", kind: .home, action: onClose)
+        }
+        .factoryButtonWidth()
+        .padding(.horizontal, 28)
+        .padding(.top, 8)
+        .padding(.bottom, 18)
+    }
+
+    private var sheetBackground: some View {
+        UnevenRoundedRectangle(
+            topLeadingRadius: 36,
+            bottomLeadingRadius: 0,
+            bottomTrailingRadius: 0,
+            topTrailingRadius: 36,
+            style: .continuous
+        )
+        .fill(
+            LinearGradient(
+                colors: [
+                    Color.white,
+                    Color(hex: 0xE8F7FF),
+                    Color(hex: 0xFFF8E8)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .shadow(color: Color(hex: 0x16345C).opacity(0.22), radius: 18, y: -6)
     }
 
     private var hearTitle: String {
