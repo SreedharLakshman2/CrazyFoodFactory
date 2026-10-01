@@ -6,8 +6,8 @@ enum Brand {
     static let company = "Sai Laksha Technologies"
     static let studio = "sreeo"
     static let copyright = "© 2026 Sai Laksha Technologies"
-    static let supportURL = URL(string: "https://sreedharlakshman2.github.io/crazy-food-factory/")!
-    static let privacyURL = URL(string: "https://sreedharlakshman2.github.io/crazy-food-factory/privacy.html")!
+    static let supportURL = URL(string: "https://sreedharlakshman2.github.io/CrazyFoodFactory/")!
+    static let privacyURL = URL(string: "https://sreedharlakshman2.github.io/CrazyFoodFactory/privacy.html")!
     static let cream = Color(red: 1, green: 0.973, blue: 0.933)
     static let tiles: [Color] = [.cyan, .purple, .pink, .orange]
     static let wordmark = LinearGradient(

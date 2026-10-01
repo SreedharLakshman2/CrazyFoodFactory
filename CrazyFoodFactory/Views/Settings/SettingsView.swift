@@ -278,7 +278,7 @@ enum LegalCopy {
 
     Open Settings to turn music or sounds on and off, or reset your level progress.
 
-    Visit the Support page from the app website listed with Sai Laksha Technologies.
+    Privacy Policy and Support links live with Sai Laksha Technologies on the Kido Chef website.
     """
 }
 
