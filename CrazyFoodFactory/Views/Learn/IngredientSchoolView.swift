@@ -8,14 +8,12 @@ struct IngredientSchoolView: View {
     var body: some View {
         GeometryReader { geo in
             let short = geo.size.height < 720
-            ZStack {
+            ZStack(alignment: .bottom) {
                 FactoryBackground(compact: true)
                 VStack(spacing: 0) {
                     header
                     SpeechBubble(
-                        text: selected == nil
-                            ? "Tap a food. Learn what it is and how chefs use it!"
-                            : (selected?.schoolLesson ?? ""),
+                        text: "Tap a food. Learn what it is and how chefs use it!",
                         compact: true
                     )
                     .padding(.horizontal, 28)
@@ -34,21 +32,41 @@ struct IngredientSchoolView: View {
                         .padding(.horizontal, 18)
                         .padding(.bottom, 28)
                     }
+                    .scrollDisabled(selected != nil)
                 }
                 .factoryReadableWidth()
+
+                if let selected {
+                    IngredientLessonSheet(
+                        id: selected,
+                        maxHeight: min(geo.size.height * 0.78, 640)
+                    ) {
+                        closeLesson()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .zIndex(1)
+                }
             }
+            .animation(.spring(response: 0.42, dampingFraction: 0.86), value: selected)
         }
         .statusBarHidden(true)
-        .sheet(item: $selected) { item in
-            IngredientLessonSheet(id: item)
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
+        .onDisappear {
+            AudioManager.shared.stopSpeech()
         }
+    }
+
+    private func closeLesson() {
+        AudioManager.shared.stopSpeech()
+        selected = nil
     }
 
     private var header: some View {
         HStack {
-            BackCircleButton { router.go(.home) }
+            BackCircleButton {
+                closeLesson()
+                router.go(.home)
+            }
             Spacer()
             Text("Ingredient School")
                 .font(GameFont.title(26))
@@ -95,6 +113,7 @@ struct IngredientSchoolView: View {
                 .overlay(Capsule().stroke(Color.white, lineWidth: 2))
         }
         .buttonStyle(PressScaleStyle())
+        .disabled(self.selected != nil)
     }
 
     private var visibleGroups: [IngredientGroup] {
@@ -124,8 +143,9 @@ struct IngredientSchoolView: View {
                         ingredient: Ingredient(id: id),
                         compact: compact
                     ) {
+                        AudioManager.shared.tap()
+                        Haptics.light()
                         selected = id
-                        AudioManager.shared.speak(id.schoolLesson)
                     }
                 }
             }
@@ -146,100 +166,191 @@ struct IngredientSchoolView: View {
 
 struct IngredientLessonSheet: View {
     let id: IngredientID
-    @Environment(\.dismiss) private var dismiss
+    var maxHeight: CGFloat
+    var onClose: () -> Void
+
+    @ObservedObject private var audio = AudioManager.shared
+    @State private var dragOffset: CGFloat = 0
 
     private var dishes: [FoodType] {
         Array(FoodCatalog.foods(using: id).prefix(6))
     }
 
     var body: some View {
-        ZStack {
-            FactoryBackground(compact: true)
-            VStack(spacing: 14) {
+        ZStack(alignment: .bottom) {
+            Color.black.opacity(0.38)
+                .ignoresSafeArea()
+                .onTapGesture { onClose() }
+                .accessibilityLabel("Close lesson")
+
+            VStack(spacing: 0) {
                 Capsule()
-                    .fill(Color.white.opacity(0.7))
+                    .fill(Color(hex: 0x16345C).opacity(0.22))
                     .frame(width: 44, height: 5)
                     .padding(.top, 10)
+                    .padding(.bottom, 8)
+                    .frame(maxWidth: .infinity)
+                    .contentShape(Rectangle())
+                    .gesture(dismissDrag)
 
-                IngredientArt(id: id)
-                    .frame(width: 120, height: 120)
-                    .padding(18)
-                    .background(
-                        Circle().fill(
-                            LinearGradient(
-                                colors: [Color.white, id.trayColor.opacity(0.45)],
-                                startPoint: .top,
-                                endPoint: .bottom
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 12) {
+                        IngredientArt(id: id)
+                            .frame(width: 108, height: 108)
+                            .padding(16)
+                            .background(
+                                Circle().fill(
+                                    LinearGradient(
+                                        colors: [Color.white, id.trayColor.opacity(0.45)],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
                             )
-                        )
-                    )
+                            .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                            .shadow(color: id.trayColor.opacity(0.35), radius: 10, y: 6)
 
-                Text(id.displayName)
-                    .font(GameFont.title(32))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color(hex: 0x16345C), Color(hex: 0xFF7A28)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                        Text(id.displayName)
+                            .font(GameFont.title(30))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color(hex: 0x16345C), Color(hex: 0xFF7A28)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
 
-                Text(id.kidFact)
-                    .font(GameFont.body(17))
-                    .foregroundColor(GameTheme.navy)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
+                        Text(id.kidFact)
+                            .font(GameFont.body(17))
+                            .foregroundColor(GameTheme.navy)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
 
-                Text(id.cookingUse)
-                    .font(GameFont.headline(16))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 24)
+                        Text(id.cookingUse)
+                            .font(GameFont.headline(16))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
 
-                if !dishes.isEmpty {
-                    VStack(spacing: 8) {
-                        Text("Kids cook it in")
-                            .font(GameFont.caption(13))
-                            .foregroundColor(GameTheme.navy.opacity(0.7))
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(dishes) { food in
-                                    VStack(spacing: 6) {
-                                        FoodIllustrationView(food: food, size: 64)
-                                        Text(food.displayName)
-                                            .font(GameFont.caption(12))
-                                            .foregroundColor(GameTheme.navy)
-                                            .lineLimit(1)
+                        if !dishes.isEmpty {
+                            VStack(spacing: 8) {
+                                Text("Kids cook it in")
+                                    .font(GameFont.caption(13))
+                                    .foregroundColor(GameTheme.navy.opacity(0.7))
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 12) {
+                                        ForEach(dishes) { food in
+                                            VStack(spacing: 6) {
+                                                FoodIllustrationView(food: food, size: 56)
+                                                Text(food.displayName)
+                                                    .font(GameFont.caption(12))
+                                                    .foregroundColor(GameTheme.navy)
+                                                    .lineLimit(1)
+                                            }
+                                            .frame(width: 78)
+                                        }
                                     }
-                                    .frame(width: 84)
+                                    .padding(.horizontal, 4)
                                 }
                             }
-                            .padding(.horizontal, 20)
                         }
                     }
+                    .padding(.horizontal, 22)
+                    .padding(.bottom, 8)
                 }
 
-                CrazyButton(title: "HEAR IT", icon: "speaker.wave.2.fill") {
-                    AudioManager.shared.speak(id.schoolLesson)
+                CrazyButton(
+                    title: hearTitle,
+                    icon: hearIcon,
+                    kind: audio.isSpeaking && !audio.isPaused ? .home : .play
+                ) {
+                    audio.toggleSpeech(id.schoolLesson)
                 }
                 .factoryButtonWidth()
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 28)
+                .padding(.top, 8)
 
-                Button("Close") { dismiss() }
+                Button("Close") { onClose() }
                     .font(GameFont.headline(16))
                     .foregroundColor(GameTheme.navy.opacity(0.7))
-                    .padding(.bottom, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 18)
             }
+            .frame(maxWidth: .infinity)
+            .frame(maxHeight: maxHeight)
+            .background(
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 36,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 36,
+                    style: .continuous
+                )
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white,
+                            Color(hex: 0xE8F7FF),
+                            Color(hex: 0xFFF8E8)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .shadow(color: Color(hex: 0x16345C).opacity(0.22), radius: 18, y: -6)
+            )
+            .overlay(alignment: .top) {
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 36,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 36,
+                    style: .continuous
+                )
+                .stroke(Color.white, lineWidth: 3)
+            }
+            .offset(y: dragOffset)
         }
-        .onAppear {
-            AudioManager.shared.speak(id.schoolLesson)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .ignoresSafeArea(edges: .bottom)
+        .accessibilityAddTraits(.isModal)
+        .onDisappear {
+            AudioManager.shared.stopSpeech()
         }
+    }
+
+    private var hearTitle: String {
+        if audio.isPaused { return "RESUME" }
+        if audio.isSpeaking { return "PAUSE" }
+        return "HEAR IT"
+    }
+
+    private var hearIcon: String {
+        if audio.isPaused { return "play.fill" }
+        if audio.isSpeaking { return "pause.fill" }
+        return "speaker.wave.2.fill"
+    }
+
+    private var dismissDrag: some Gesture {
+        DragGesture(minimumDistance: 12)
+            .onChanged { value in
+                dragOffset = max(0, value.translation.height)
+            }
+            .onEnded { value in
+                if value.translation.height > 110 || value.predictedEndTranslation.height > 180 {
+                    onClose()
+                } else {
+                    withAnimation(.spring(response: 0.36, dampingFraction: 0.86)) {
+                        dragOffset = 0
+                    }
+                }
+            }
     }
 }
 

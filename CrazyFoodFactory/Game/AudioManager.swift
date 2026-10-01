@@ -1,9 +1,13 @@
 import AVFoundation
+import Combine
 import Foundation
 
 @MainActor
-final class AudioManager: NSObject {
+final class AudioManager: NSObject, ObservableObject {
     static let shared = AudioManager()
+
+    @Published private(set) var isSpeaking = false
+    @Published private(set) var isPaused = false
 
     private var toneCache: [String: Data] = [:]
     private var players: [AVAudioPlayer] = []
@@ -33,7 +37,7 @@ final class AudioManager: NSObject {
             stopMusic()
         }
         if !speech {
-            speaker?.stopSpeaking(at: .immediate)
+            stopSpeech()
         }
     }
 
@@ -88,8 +92,11 @@ final class AudioManager: NSObject {
         guard speechEnabled, !text.isEmpty else { return }
         configure()
         let synth = speaker ?? AVSpeechSynthesizer()
+        synth.delegate = self
         speaker = synth
         synth.stopSpeaking(at: .immediate)
+        isPaused = false
+        isSpeaking = true
         let utterance = AVSpeechUtterance(string: text)
         utterance.rate = 0.48
         utterance.pitchMultiplier = 1.18
@@ -97,6 +104,35 @@ final class AudioManager: NSObject {
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
             ?? AVSpeechSynthesisVoice(language: "en-GB")
         synth.speak(utterance)
+    }
+
+    func toggleSpeech(_ text: String) {
+        if isPaused {
+            resumeSpeech()
+        } else if isSpeaking {
+            pauseSpeech()
+        } else {
+            speak(text)
+        }
+    }
+
+    func pauseSpeech() {
+        guard isSpeaking, !isPaused else { return }
+        speaker?.pauseSpeaking(at: .word)
+        isPaused = true
+    }
+
+    func resumeSpeech() {
+        guard isPaused else { return }
+        speaker?.continueSpeaking()
+        isPaused = false
+        isSpeaking = true
+    }
+
+    func stopSpeech() {
+        speaker?.stopSpeaking(at: .immediate)
+        isSpeaking = false
+        isPaused = false
     }
 
     func startMusic() {
@@ -206,5 +242,41 @@ final class AudioManager: NSObject {
             data.append(Data(bytes: &value, count: 2))
         }
         return data
+    }
+}
+
+extension AudioManager: AVSpeechSynthesizerDelegate {
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
+        Task { @MainActor in
+            isSpeaking = true
+            isPaused = false
+        }
+    }
+
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        Task { @MainActor in
+            isSpeaking = false
+            isPaused = false
+        }
+    }
+
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didPause utterance: AVSpeechUtterance) {
+        Task { @MainActor in
+            isPaused = true
+        }
+    }
+
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didContinue utterance: AVSpeechUtterance) {
+        Task { @MainActor in
+            isSpeaking = true
+            isPaused = false
+        }
+    }
+
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        Task { @MainActor in
+            isSpeaking = false
+            isPaused = false
+        }
     }
 }
