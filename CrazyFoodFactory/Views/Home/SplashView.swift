@@ -7,30 +7,45 @@ struct SplashView: View {
     @State private var finished = false
 
     var body: some View {
-        ZStack {
-            Brand.cream.ignoresSafeArea()
+        GeometryReader { geo in
+            let s = FactoryLayout.splashScale(in: geo.size)
+            ZStack {
+                Brand.cream.ignoresSafeArea()
 
-            VStack(spacing: 14) {
-                SreeoTiles(size: 26, spacing: 6, dropIn: true, appear: appear, reduceMotion: reduceMotion)
-                Text(Brand.studio)
-                    .font(.system(size: 46, weight: .black, design: .rounded))
-                    .foregroundStyle(Brand.wordmark)
-                    .scaleEffect(appear || reduceMotion ? 1 : 0.92)
-                    .opacity(appear || reduceMotion ? 1 : 0.35)
-                Text(Brand.name)
-                    .font(.system(.headline, design: .rounded).weight(.semibold))
-                    .foregroundStyle(Color.black.opacity(0.45))
-                    .opacity(appear || reduceMotion ? 1 : 0.35)
-            }
+                VStack(spacing: 14 * s) {
+                    SreeoTiles(
+                        size: 26 * s,
+                        spacing: 6 * s,
+                        dropIn: true,
+                        appear: appear,
+                        reduceMotion: reduceMotion
+                    )
+                    Text(Brand.studio)
+                        .font(.system(size: 46 * s, weight: .black, design: .rounded))
+                        .foregroundStyle(Brand.wordmark)
+                        .scaleEffect(appear || reduceMotion ? 1 : 0.92)
+                        .opacity(appear || reduceMotion ? 1 : 0.35)
+                    Text(Brand.name)
+                        .font(.system(size: 18 * s, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.45))
+                        .opacity(appear || reduceMotion ? 1 : 0.35)
+                }
 
-            VStack(spacing: 6) {
-                SreeoTiles(size: 10, spacing: 3, dropIn: false, appear: true, reduceMotion: reduceMotion)
-                Text(Brand.copyright)
-                    .font(.system(.caption, design: .rounded).weight(.semibold))
-                    .foregroundStyle(Color.black.opacity(0.5))
+                VStack(spacing: 6 * s) {
+                    SreeoTiles(
+                        size: 10 * s,
+                        spacing: 3 * s,
+                        dropIn: false,
+                        appear: true,
+                        reduceMotion: reduceMotion
+                    )
+                    Text(Brand.copyright)
+                        .font(.system(size: 13 * s, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.5))
+                }
+                .padding(.bottom, max(40, geo.safeAreaInsets.bottom + 24))
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             }
-            .padding(.bottom, 40)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(Brand.studio). \(Brand.name). \(Brand.copyright)")
@@ -81,6 +96,10 @@ struct SreeoTiles: View {
     }
 }
 
-#Preview {
+#Preview("iPhone") {
+    SplashView(onFinished: {})
+}
+
+#Preview("iPad") {
     SplashView(onFinished: {})
 }

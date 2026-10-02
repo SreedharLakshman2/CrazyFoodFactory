@@ -2,12 +2,14 @@ import SwiftUI
 
 struct IngredientSchoolView: View {
     @EnvironmentObject private var router: AppRouter
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var selected: IngredientID?
     @State private var groupFilter: IngredientGroup?
 
     var body: some View {
         GeometryReader { geo in
             let short = geo.size.height < 720
+            let pad = FactoryLayout.isRegular(geo.size)
             ZStack(alignment: .bottom) {
                 FactoryBackground(compact: true)
                 VStack(spacing: 0) {
@@ -16,7 +18,7 @@ struct IngredientSchoolView: View {
                         text: "Tap a food. Learn what it is and how chefs use it!",
                         compact: true
                     )
-                    .padding(.horizontal, 28)
+                    .padding(.horizontal, pad ? 40 : 28)
                     .padding(.top, 8)
                     .padding(.bottom, 10)
 
@@ -26,10 +28,10 @@ struct IngredientSchoolView: View {
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 18) {
                             ForEach(visibleGroups) { group in
-                                section(group, compact: short)
+                                section(group, compact: short, columns: pad ? 4 : 3)
                             }
                         }
-                        .padding(.horizontal, 18)
+                        .padding(.horizontal, pad ? 24 : 18)
                         .padding(.bottom, 28)
                     }
                     .scrollDisabled(selected != nil)
@@ -39,7 +41,7 @@ struct IngredientSchoolView: View {
                 if let selected {
                     IngredientLessonSheet(
                         id: selected,
-                        maxHeight: min(geo.size.height * 0.82, 720)
+                        maxHeight: geo.size.height * (pad ? 0.88 : 0.78)
                     ) {
                         closeLesson()
                     }
@@ -51,6 +53,14 @@ struct IngredientSchoolView: View {
             .animation(.spring(response: 0.42, dampingFraction: 0.86), value: selected)
         }
         .statusBarHidden(true)
+        .onAppear {
+            let args = ProcessInfo.processInfo.arguments
+            if let index = args.firstIndex(of: "-food"),
+               args.indices.contains(index + 1),
+               let id = IngredientID(rawValue: args[index + 1]) {
+                selected = id
+            }
+        }
         .onDisappear {
             AudioManager.shared.stopSpeech()
         }
@@ -69,7 +79,7 @@ struct IngredientSchoolView: View {
             }
             Spacer()
             Text("Ingredient School")
-                .font(GameFont.title(26))
+                .font(GameFont.title(sizeClass == .regular ? 32 : 26))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color(hex: 0x16345C), Color(hex: 0xFF7A28)],
@@ -78,7 +88,7 @@ struct IngredientSchoolView: View {
                     )
                 )
             Spacer()
-            Color.clear.frame(width: 52, height: 52)
+            Color.clear.frame(width: 60, height: 60)
         }
         .padding(.horizontal, 12)
         .padding(.top, 8)
@@ -123,21 +133,15 @@ struct IngredientSchoolView: View {
         }
     }
 
-    private func section(_ group: IngredientGroup, compact: Bool) -> some View {
+    private func section(_ group: IngredientGroup, compact: Bool, columns: Int = 3) -> some View {
         let items = IngredientID.schoolRoster.filter { $0.schoolGroup == group }
+        let grid = Array(repeating: GridItem(.flexible(), spacing: 10), count: columns)
         return VStack(alignment: .leading, spacing: 10) {
             Text(group.title)
                 .font(GameFont.headline(18))
                 .foregroundColor(GameTheme.navy)
                 .padding(.leading, 4)
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: 10),
-                    GridItem(.flexible(), spacing: 10),
-                    GridItem(.flexible(), spacing: 10)
-                ],
-                spacing: 10
-            ) {
+            LazyVGrid(columns: grid, spacing: 10) {
                 ForEach(items) { id in
                     IngredientCard(
                         ingredient: Ingredient(id: id),
@@ -177,40 +181,54 @@ struct IngredientLessonSheet: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Color.black.opacity(0.38)
-                .ignoresSafeArea()
-                .onTapGesture { onClose() }
-                .accessibilityLabel("Close lesson")
+        GeometryReader { geo in
+            let metrics = LessonMetrics(size: geo.size)
+            ZStack(alignment: .bottom) {
+                Color.black.opacity(0.38)
+                    .ignoresSafeArea()
+                    .onTapGesture { onClose() }
+                    .accessibilityLabel("Close lesson")
 
-            VStack(spacing: 0) {
-                sheetChrome
-
-                if maxHeight < 560 {
-                    ScrollView(showsIndicators: false) {
-                        lessonStack(flexible: false)
-                    }
-                } else {
-                    lessonStack(flexible: true)
-                        .frame(maxHeight: .infinity)
+                ViewThatFits(in: .vertical) {
+                    sheetPanel(metrics: metrics, scrolling: false)
+                    sheetPanel(metrics: metrics, scrolling: true)
+                        .frame(maxHeight: maxHeight)
                 }
-
-                actionButtons
-            }
-            .frame(maxWidth: .infinity)
-            .frame(maxHeight: maxHeight)
-            .background(sheetBackground)
-            .overlay(alignment: .top) {
-                UnevenRoundedRectangle(
-                    topLeadingRadius: 36,
-                    bottomLeadingRadius: 0,
-                    bottomTrailingRadius: 0,
-                    topTrailingRadius: 36,
-                    style: .continuous
+                .frame(width: metrics.panelWidth)
+                .background(
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: metrics.pad ? 44 : 36,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: metrics.pad ? 44 : 36,
+                        style: .continuous
+                    )
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white,
+                                Color(hex: 0xE8F7FF),
+                                Color(hex: 0xFFF8E8)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .shadow(color: Color(hex: 0x16345C).opacity(0.22), radius: 18, y: -6)
                 )
-                .stroke(Color.white, lineWidth: 3)
+                .overlay(alignment: .top) {
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: metrics.pad ? 44 : 36,
+                        bottomLeadingRadius: 0,
+                        bottomTrailingRadius: 0,
+                        topTrailingRadius: metrics.pad ? 44 : 36,
+                        style: .continuous
+                    )
+                    .stroke(Color.white, lineWidth: 3)
+                }
+                .offset(y: dragOffset)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
             }
-            .offset(y: dragOffset)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea(edges: .bottom)
@@ -220,48 +238,64 @@ struct IngredientLessonSheet: View {
         }
     }
 
-    private var sheetChrome: some View {
-        HStack {
-            Color.clear.frame(width: 52, height: 52)
-            Spacer()
+    @ViewBuilder
+    private func sheetPanel(metrics: LessonMetrics, scrolling: Bool) -> some View {
+        VStack(spacing: 0) {
             Capsule()
                 .fill(Color(hex: 0x16345C).opacity(0.22))
-                .frame(width: 44, height: 5)
-            Spacer()
-            CircleIconButton(systemName: "xmark", accessibility: "Close") {
-                onClose()
+                .frame(width: metrics.pad ? 56 : 44, height: metrics.pad ? 7 : 5)
+                .padding(.top, metrics.pad ? 14 : 10)
+                .padding(.bottom, metrics.pad ? 12 : 8)
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
+                .gesture(dismissDrag)
+
+            if scrolling {
+                ScrollView(showsIndicators: false) {
+                    lessonBody(metrics: metrics)
+                }
+            } else {
+                lessonBody(metrics: metrics)
             }
+
+            CrazyButton(
+                title: hearTitle,
+                icon: hearIcon,
+                kind: audio.isSpeaking && !audio.isPaused ? .home : .play
+            ) {
+                audio.toggleSpeech(id.schoolLesson)
+            }
+            .factoryButtonWidth()
+            .padding(.horizontal, metrics.pad ? 40 : 28)
+            .padding(.top, 10)
+
+            Button("Close") { onClose() }
+                .font(GameFont.headline(metrics.close))
+                .foregroundColor(GameTheme.navy.opacity(0.7))
+                .padding(.top, 10)
+                .padding(.bottom, metrics.pad ? 24 : 18)
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 8)
-        .padding(.bottom, 4)
-        .contentShape(Rectangle())
-        .gesture(dismissDrag)
     }
 
-    @ViewBuilder
-    private func lessonStack(flexible: Bool) -> some View {
-        VStack(spacing: 0) {
-            if flexible { Spacer(minLength: 8) }
+    private func lessonBody(metrics: LessonMetrics) -> some View {
+        VStack(spacing: metrics.stack) {
             IngredientArt(id: id)
-                .frame(width: 148, height: 148)
-                .padding(18)
+                .frame(width: metrics.art, height: metrics.art)
+                .padding(metrics.artPad)
                 .background(
                     Circle().fill(
                         LinearGradient(
-                            colors: [Color.white, id.trayColor.opacity(0.5)],
+                            colors: [Color.white, id.trayColor.opacity(0.45)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
                 )
-                .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                .shadow(color: id.trayColor.opacity(0.35), radius: 12, y: 8)
-
-            if flexible { Spacer(minLength: 10) } else { Color.clear.frame(height: 14) }
+                .overlay(Circle().stroke(Color.white, lineWidth: 3))
+                .shadow(color: id.trayColor.opacity(0.35), radius: 10, y: 6)
 
             Text(id.displayName)
-                .font(GameFont.title(34))
+                .font(GameFont.title(metrics.title))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color(hex: 0x16345C), Color(hex: 0xFF7A28)],
@@ -269,139 +303,77 @@ struct IngredientLessonSheet: View {
                         endPoint: .trailing
                     )
                 )
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(1)
 
-            VStack(spacing: 8) {
-                Text(id.kidFact)
-                    .font(GameFont.body(18))
-                    .foregroundColor(GameTheme.navy)
-                    .multilineTextAlignment(.center)
-                Text(id.cookingUse)
-                    .font(GameFont.headline(17))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 16)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(Color.white.opacity(0.86))
+            lessonBlock(
+                title: "What it is",
+                text: id.kidFact,
+                metrics: metrics,
+                tint: Color(hex: 0xE8F8FF)
             )
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(Color.white, lineWidth: 2)
+            lessonBlock(
+                title: "How chefs cook it",
+                text: id.cookingUse,
+                metrics: metrics,
+                tint: Color(hex: 0xFFF4D6)
             )
-            .padding(.top, 12)
-
-            if flexible { Spacer(minLength: 12) } else { Color.clear.frame(height: 16) }
 
             if !dishes.isEmpty {
-                dishesCard
+                VStack(spacing: metrics.pad ? 12 : 8) {
+                    Text("Kids cook it in")
+                        .font(GameFont.headline(metrics.caption))
+                        .foregroundColor(GameTheme.navy.opacity(0.78))
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: metrics.pad ? 16 : 12) {
+                            ForEach(dishes) { food in
+                                VStack(spacing: 8) {
+                                    FoodIllustrationView(food: food, size: metrics.dishArt)
+                                    Text(food.displayName)
+                                        .font(GameFont.headline(metrics.dish))
+                                        .foregroundColor(GameTheme.navy)
+                                        .lineLimit(2)
+                                        .minimumScaleFactor(1)
+                                        .multilineTextAlignment(.center)
+                                }
+                                .frame(width: metrics.dishArt + 28)
+                            }
+                        }
+                        .padding(.horizontal, 4)
+                    }
+                }
             }
-
-            if flexible { Spacer(minLength: 16) } else { Color.clear.frame(height: 8) }
         }
-        .padding(.horizontal, 22)
+        .padding(.horizontal, metrics.gutter)
+        .padding(.bottom, 10)
     }
 
-    private var dishesCard: some View {
-        VStack(spacing: 12) {
-            Text("Kids cook it in")
-                .font(GameFont.caption(14))
-                .foregroundColor(GameTheme.navy.opacity(0.7))
-            if dishes.count <= 3 {
-                HStack(spacing: 12) {
-                    ForEach(dishes) { food in
-                        dishChip(food)
-                            .frame(maxWidth: .infinity)
-                    }
-                }
-            } else {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible(), spacing: 10),
-                        GridItem(.flexible(), spacing: 10),
-                        GridItem(.flexible(), spacing: 10)
-                    ],
-                    spacing: 10
-                ) {
-                    ForEach(dishes) { food in
-                        dishChip(food)
-                    }
-                }
-            }
+    private func lessonBlock(title: String, text: String, metrics: LessonMetrics, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: metrics.pad ? 10 : 6) {
+            Text(title)
+                .font(GameFont.caption(metrics.caption))
+                .foregroundColor(Color(hex: 0xFF7A28))
+            Text(text)
+                .font(GameFont.body(metrics.fact))
+                .foregroundColor(GameTheme.navy)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .minimumScaleFactor(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 16)
-        .frame(maxWidth: .infinity)
+        .padding(.horizontal, metrics.pad ? 22 : 16)
+        .padding(.vertical, metrics.pad ? 18 : 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.white.opacity(0.9))
+            RoundedRectangle(cornerRadius: metrics.pad ? 24 : 18, style: .continuous)
+                .fill(tint)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: metrics.pad ? 24 : 18, style: .continuous)
                 .stroke(Color.white, lineWidth: 2)
         )
-    }
-
-    private func dishChip(_ food: FoodType) -> some View {
-        VStack(spacing: 8) {
-            FoodIllustrationView(food: food, size: 76)
-            Text(food.displayName)
-                .font(GameFont.caption(13))
-                .foregroundColor(GameTheme.navy)
-                .lineLimit(1)
-        }
-        .padding(.vertical, 8)
-        .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(food.cardColor.opacity(0.55))
-        )
-    }
-
-    private var actionButtons: some View {
-        VStack(spacing: 10) {
-            CrazyButton(
-                title: hearTitle,
-                icon: hearIcon
-            ) {
-                audio.toggleSpeech(id.schoolLesson)
-            }
-            CrazyButton(title: "CLOSE", icon: "xmark", kind: .home, action: onClose)
-        }
-        .factoryButtonWidth()
-        .padding(.horizontal, 28)
-        .padding(.top, 8)
-        .padding(.bottom, 18)
-    }
-
-    private var sheetBackground: some View {
-        UnevenRoundedRectangle(
-            topLeadingRadius: 36,
-            bottomLeadingRadius: 0,
-            bottomTrailingRadius: 0,
-            topTrailingRadius: 36,
-            style: .continuous
-        )
-        .fill(
-            LinearGradient(
-                colors: [
-                    Color.white,
-                    Color(hex: 0xE8F7FF),
-                    Color(hex: 0xFFF8E8)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
-        .shadow(color: Color(hex: 0x16345C).opacity(0.22), radius: 18, y: -6)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title). \(text)")
     }
 
     private var hearTitle: String {
@@ -430,6 +402,38 @@ struct IngredientLessonSheet: View {
                     }
                 }
             }
+    }
+}
+
+private struct LessonMetrics {
+    let pad: Bool
+    let panelWidth: CGFloat
+    let art: CGFloat
+    let artPad: CGFloat
+    let title: CGFloat
+    let fact: CGFloat
+    let caption: CGFloat
+    let dish: CGFloat
+    let dishArt: CGFloat
+    let close: CGFloat
+    let gutter: CGFloat
+    let stack: CGFloat
+
+    init(size: CGSize) {
+        pad = FactoryLayout.isRegular(size)
+        let scale = FactoryLayout.scale(in: size)
+        let bump = pad ? max(scale / 1.28, 1.15) : 1
+        panelWidth = pad ? min(size.width - 56, 860) : size.width
+        art = (pad ? 168 : 108) * (pad ? min(bump, 1.22) : 1)
+        artPad = pad ? 22 : 16
+        title = (pad ? 44 : 30) * (pad ? min(bump, 1.18) : 1)
+        fact = (pad ? 26 : 17) * (pad ? min(bump, 1.18) : 1)
+        caption = (pad ? 18 : 13) * (pad ? min(bump, 1.15) : 1)
+        dish = (pad ? 17 : 12) * (pad ? min(bump, 1.15) : 1)
+        dishArt = (pad ? 76 : 56) * (pad ? min(bump, 1.18) : 1)
+        close = pad ? 22 : 16
+        gutter = pad ? 32 : 22
+        stack = pad ? 20 : 12
     }
 }
 

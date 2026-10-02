@@ -7,9 +7,13 @@ struct CrazyButton: View {
     var fillsWidth: Bool = true
     var action: () -> Void
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
     enum Kind {
         case play, next, retry, home, danger
     }
+
+    private var pad: Bool { sizeClass == .regular }
 
     var body: some View {
         Button(action: {
@@ -17,20 +21,20 @@ struct CrazyButton: View {
             Haptics.light()
             action()
         }) {
-            HStack(spacing: 10) {
+            HStack(spacing: pad ? 12 : 10) {
                 if let icon {
                     Image(systemName: icon)
-                        .font(.system(size: 22, weight: .heavy))
+                        .font(.system(size: pad ? 26 : 22, weight: .heavy))
                 }
                 Text(title)
-                    .font(GameFont.title(kind == .play ? 28 : 22))
+                    .font(GameFont.title(kind == .play ? (pad ? 34 : 28) : (pad ? 26 : 22)))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
             .foregroundColor(foreground)
-            .padding(.horizontal, 28)
+            .padding(.horizontal, pad ? 34 : 28)
             .frame(maxWidth: fillsWidth ? .infinity : nil)
-            .frame(height: kind == .play ? 68 : 60)
+            .frame(height: kind == .play ? (pad ? 82 : 68) : (pad ? 70 : 60))
             .background(background)
             .clipShape(Capsule())
             .overlay(
@@ -82,6 +86,10 @@ struct CircleIconButton: View {
     var dimmed: Bool = false
     var action: () -> Void
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    private var diameter: CGFloat { sizeClass == .regular ? 60 : 52 }
+
     var body: some View {
         Button {
             AudioManager.shared.tap()
@@ -89,9 +97,9 @@ struct CircleIconButton: View {
             action()
         } label: {
             Image(systemName: systemName)
-                .font(.system(size: 18, weight: .bold))
+                .font(.system(size: sizeClass == .regular ? 20 : 18, weight: .bold))
                 .foregroundColor(GameTheme.navy.opacity(dimmed ? 0.35 : 1))
-                .frame(width: 52, height: 52)
+                .frame(width: diameter, height: diameter)
                 .background(
                     Circle()
                         .fill(Color.white)

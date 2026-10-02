@@ -7,6 +7,7 @@ struct FoodSelectionView: View {
     var body: some View {
         GeometryReader { geo in
             let short = geo.size.height < 720
+            let pad = FactoryLayout.isRegular(geo.size)
             ZStack {
                 FactoryBackground(compact: true)
 
@@ -15,7 +16,7 @@ struct FoodSelectionView: View {
                         BackCircleButton { router.go(.home) }
                         Spacer()
                     }
-                    .padding(.horizontal, 18)
+                    .padding(.horizontal, pad ? 24 : 18)
                     .padding(.top, 8)
 
                     SpeechBubble(text: "What do you want\nto make today?")
@@ -23,12 +24,12 @@ struct FoodSelectionView: View {
                         .padding(.bottom, short ? 10 : 16)
 
                     ScrollView(showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: 18) {
+                        VStack(alignment: .leading, spacing: pad ? 22 : 18) {
                             ForEach(FoodKitchen.allCases) { kitchen in
-                                kitchenSection(kitchen, short: short)
+                                kitchenSection(kitchen, short: short, pad: pad)
                             }
                         }
-                        .padding(.horizontal, 22)
+                        .padding(.horizontal, pad ? 28 : 22)
                         .padding(.bottom, 28)
                     }
                 }
@@ -38,22 +39,20 @@ struct FoodSelectionView: View {
         .statusBarHidden(true)
     }
 
-    private func kitchenSection(_ kitchen: FoodKitchen, short: Bool) -> some View {
+    private func kitchenSection(_ kitchen: FoodKitchen, short: Bool, pad: Bool) -> some View {
         let foods = FoodType.foods(in: kitchen)
+        let columns = Array(
+            repeating: GridItem(.flexible(), spacing: pad ? 16 : 14),
+            count: pad ? 3 : 2
+        )
         return VStack(alignment: .leading, spacing: 10) {
             Text(kitchen.title)
-                .font(GameFont.headline(18))
+                .font(GameFont.headline(pad ? 22 : 18))
                 .foregroundColor(GameTheme.navy)
                 .padding(.leading, 4)
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: 14),
-                    GridItem(.flexible(), spacing: 14)
-                ],
-                spacing: 14
-            ) {
+            LazyVGrid(columns: columns, spacing: pad ? 16 : 14) {
                 ForEach(foods) { food in
-                    foodButton(food, artSize: short ? 86 : 98)
+                    foodButton(food, artSize: pad ? 120 : (short ? 86 : 98))
                 }
             }
         }

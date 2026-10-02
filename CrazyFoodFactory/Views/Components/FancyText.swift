@@ -71,23 +71,27 @@ struct AnimatedTextBanner: View {
 
 struct BrandWordmark: View {
     var large: Bool = true
+    var scale: CGFloat = 1
 
     @State private var shine = false
     @State private var bounce = false
 
+    private var kidoSize: CGFloat { (large ? 58 : 42) * scale }
+    private var chefSize: CGFloat { (large ? 62 : 46) * scale }
+
     var body: some View {
-        VStack(spacing: large ? -6 : -3) {
-            word("Kido", colors: [Color(hex: 0xFFFDF2), Color(hex: 0xFFE14A), Color(hex: 0xFFB300)], size: large ? 58 : 42)
-            word("Chef", colors: [Color(hex: 0xFFF0C8), Color(hex: 0xFF7A28), Color(hex: 0xE02060)], size: large ? 62 : 46)
+        VStack(spacing: (large ? -6 : -3) * scale) {
+            word("Kido", colors: [Color(hex: 0xFFFDF2), Color(hex: 0xFFE14A), Color(hex: 0xFFB300)], size: kidoSize)
+            word("Chef", colors: [Color(hex: 0xFFF0C8), Color(hex: 0xFF7A28), Color(hex: 0xE02060)], size: chefSize)
         }
-        .padding(.horizontal, large ? 36 : 28)
-        .padding(.vertical, large ? 18 : 14)
+        .padding(.horizontal, (large ? 36 : 28) * scale)
+        .padding(.vertical, (large ? 18 : 14) * scale)
         .background(plaque)
         .overlay(plaqueStroke)
         .overlay(alignment: .top) { gloss }
         .overlay(sparkles)
-        .shadow(color: Color(hex: 0xFF8A3D).opacity(0.38), radius: 0, y: 6)
-        .shadow(color: Color(hex: 0xFF5A8A).opacity(0.22), radius: 18, y: 10)
+        .shadow(color: Color(hex: 0xFF8A3D).opacity(0.38), radius: 0, y: 6 * scale)
+        .shadow(color: Color(hex: 0xFF5A8A).opacity(0.22), radius: 18 * scale, y: 10 * scale)
         .scaleEffect(bounce ? 1.03 : 1)
         .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: shine)
         .animation(.spring(response: 0.9, dampingFraction: 0.55).repeatForever(autoreverses: true), value: bounce)
@@ -100,7 +104,7 @@ struct BrandWordmark: View {
     }
 
     private var plaque: some View {
-        RoundedRectangle(cornerRadius: 34, style: .continuous)
+        RoundedRectangle(cornerRadius: 34 * scale, style: .continuous)
             .fill(
                 LinearGradient(
                     colors: [
@@ -116,37 +120,37 @@ struct BrandWordmark: View {
     }
 
     private var plaqueStroke: some View {
-        RoundedRectangle(cornerRadius: 34, style: .continuous)
+        RoundedRectangle(cornerRadius: 34 * scale, style: .continuous)
             .stroke(
                 LinearGradient(
                     colors: [Color.white, Color.white.opacity(0.55), Color(hex: 0xFFE14A)],
                     startPoint: .top,
                     endPoint: .bottom
                 ),
-                lineWidth: 4
+                lineWidth: 4 * max(scale, 1)
             )
     }
 
     private var gloss: some View {
         Capsule()
             .fill(Color.white.opacity(0.42))
-            .frame(height: 12)
-            .padding(.horizontal, 28)
-            .padding(.top, 10)
+            .frame(height: 12 * scale)
+            .padding(.horizontal, 28 * scale)
+            .padding(.top, 10 * scale)
             .allowsHitTesting(false)
     }
 
     private var sparkles: some View {
         ZStack {
             Image(systemName: "sparkle")
-                .font(.system(size: large ? 16 : 13, weight: .bold))
+                .font(.system(size: (large ? 16 : 13) * scale, weight: .bold))
                 .foregroundColor(.white)
-                .offset(x: large ? -78 : -62, y: large ? -28 : -22)
+                .offset(x: (large ? -78 : -62) * scale, y: (large ? -28 : -22) * scale)
                 .opacity(shine ? 1 : 0.35)
             Image(systemName: "sparkle")
-                .font(.system(size: large ? 13 : 11, weight: .bold))
+                .font(.system(size: (large ? 13 : 11) * scale, weight: .bold))
                 .foregroundColor(.white)
-                .offset(x: large ? 76 : 60, y: large ? 30 : 24)
+                .offset(x: (large ? 76 : 60) * scale, y: (large ? 30 : 24) * scale)
                 .opacity(shine ? 0.4 : 1)
         }
         .allowsHitTesting(false)
