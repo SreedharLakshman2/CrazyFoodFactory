@@ -281,6 +281,7 @@ struct IngredientCard: View {
     let ingredient: Ingredient
     var used: Bool = false
     var compact: Bool = false
+    var highlighted: Bool = false
     var action: () -> Void
     @Environment(\.factoryMetrics) private var metrics
 
@@ -298,46 +299,132 @@ struct IngredientCard: View {
                     .minimumScaleFactor(0.85)
                     .frame(width: art + 12)
             }
+            .padding(.horizontal, 4)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(highlighted ? Color(hex: 0xFFE56A).opacity(0.45) : Color.clear)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(highlighted ? Color(hex: 0xFF7A28) : Color.clear, lineWidth: 3)
+            )
+            .scaleEffect(highlighted ? 1.04 : 1)
             .opacity(used && !ingredient.isOptional ? 0.7 : 1)
         }
         .buttonStyle(PressScaleStyle())
         .accessibilityLabel("\(ingredient.displayName). \(ingredient.kidFact)")
+        .accessibilityAddTraits(highlighted ? .isSelected : [])
     }
 }
 
 struct IngredientTray: View {
     let ingredients: [Ingredient]
     let placed: [IngredientID]
+    var focused: IngredientID? = nil
     var compact: Bool = false
     var onTap: (IngredientID) -> Void
 
-    var body: some View {
-        let cards = HStack(spacing: compact ? 8 : 10) {
-            ForEach(ingredients) { item in
-                IngredientCard(
-                    ingredient: item,
-                    used: placed.contains(item.id) && !item.isOptional && !item.isChaosBait,
-                    compact: compact
-                ) {
-                    onTap(item.id)
-                }
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
+    @State private var didHintScroll = false
 
-        Group {
-            if ingredients.count <= 5 {
-                cards
-                    .frame(maxWidth: .infinity)
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    cards
+    private var focusID: IngredientID? {
+        focused ?? ingredients.first(where: { !placed.contains($0.id) })?.id ?? ingredients.first?.id
+    }
+
+    private var canHintMore: Bool {
+        ingredients.count > 5
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            ScrollViewReader { proxy in
+                ZStack(alignment: .trailing) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: compact ? 8 : 10) {
+                            ForEach(ingredients) { item in
+                                IngredientCard(
+                                    ingredient: item,
+                                    used: placed.contains(item.id) && !item.isOptional && !item.isChaosBait,
+                                    compact: compact,
+                                    highlighted: item.id == focusID
+                                ) {
+                                    onTap(item.id)
+                                }
+                                .id(item.id)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 4)
+                        .frame(minWidth: geo.size.width, alignment: .leading)
+                    }
+                    .scrollClipDisabled()
+                    .defaultScrollAnchor(.leading)
+
+                    if canHintMore {
+                        scrollHint
+                    }
                 }
-                .scrollClipDisabled()
+                .onAppear {
+                    jumpToFocus(proxy, animated: false)
+                    hintThereIsMore(proxy)
+                }
+                .onChange(of: focusID) { _, _ in
+                    jumpToFocus(proxy, animated: true)
+                }
             }
         }
+        .frame(height: compact ? 108 : 118)
         .accessibilityElement(children: .contain)
+        .accessibilityHint(canHintMore ? "Swipe sideways for more toppings." : "")
+    }
+
+    private var scrollHint: some View {
+        HStack(spacing: 0) {
+            LinearGradient(
+                colors: [Color.white.opacity(0), Color.white.opacity(0.88)],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .frame(width: 28)
+            Image(systemName: "chevron.compact.right")
+                .font(.system(size: 22, weight: .heavy))
+                .foregroundColor(GameTheme.navy.opacity(0.55))
+                .padding(.trailing, 4)
+                .phaseAnimator([false, true]) { content, bouncing in
+                    content.offset(x: bouncing ? 5 : 0)
+                }
+        }
+        .frame(maxHeight: .infinity)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func jumpToFocus(_ proxy: ScrollViewProxy, animated: Bool) {
+        guard let focusID else { return }
+        let jump = { proxy.scrollTo(focusID, anchor: .leading) }
+        if animated {
+            withAnimation(.spring(response: 0.42, dampingFraction: 0.86), jump)
+        } else {
+            DispatchQueue.main.async(execute: jump)
+        }
+    }
+
+    private func hintThereIsMore(_ proxy: ScrollViewProxy) {
+        guard canHintMore, didHintScroll == false, let focusID else { return }
+        didHintScroll = true
+        guard let index = ingredients.firstIndex(where: { $0.id == focusID }),
+              ingredients.indices.contains(index + 2) else { return }
+        let peekID = ingredients[index + 2].id
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+            withAnimation(.easeInOut(duration: 0.48)) {
+                proxy.scrollTo(peekID, anchor: .center)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.84)) {
+                    proxy.scrollTo(focusID, anchor: .leading)
+                }
+            }
+        }
     }
 }
 

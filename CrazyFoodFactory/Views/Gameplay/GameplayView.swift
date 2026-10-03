@@ -22,6 +22,7 @@ struct GameplayView: View {
                     IngredientTray(
                         ingredients: game.definition.ingredients,
                         placed: game.placed,
+                        focused: game.trayFocus,
                         compact: metrics.compact,
                         onTap: game.tapIngredient
                     )

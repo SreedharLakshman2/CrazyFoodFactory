@@ -52,6 +52,11 @@ final class GameplayViewModel: ObservableObject {
         return definition.steps[stepIndex]
     }
 
+    var trayFocus: IngredientID? {
+        guard let step = currentStep, !step.isOven else { return definition.ingredients.first?.id }
+        return step.accepted.first { !placed.contains($0) } ?? step.accepted.first
+    }
+
     var starPreview: Int {
         max(1, 3 - mistakeCount / 2)
     }
