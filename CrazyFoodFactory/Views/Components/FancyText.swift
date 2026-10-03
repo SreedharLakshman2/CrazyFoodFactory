@@ -22,6 +22,7 @@ struct AnimatedTextBanner: View {
     var colors: [Color] = [Color(hex: 0xFFE56A), Color(hex: 0xFF9A3C)]
     var textColor: Color = GameTheme.navy
     var size: CGFloat = 28
+    var lines: Int = 2
 
     @State private var shine = false
     @State private var bounce = false
@@ -30,10 +31,10 @@ struct AnimatedTextBanner: View {
         Text(text)
             .font(GameFont.display(size))
             .foregroundColor(textColor)
-            .lineLimit(2)
-            .minimumScaleFactor(0.65)
+            .lineLimit(lines)
+            .minimumScaleFactor(lines == 1 ? 0.5 : 0.65)
             .multilineTextAlignment(.center)
-            .padding(.horizontal, 26)
+            .padding(.horizontal, lines == 1 ? 36 : 26)
             .padding(.vertical, 14)
             .frame(maxWidth: .infinity)
             .background(

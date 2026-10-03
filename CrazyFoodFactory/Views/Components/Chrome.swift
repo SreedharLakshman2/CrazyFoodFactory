@@ -602,11 +602,12 @@ struct LevelNode: View {
 
 struct ResultCard: View {
     let result: FoodResult
+    var compact: Bool = false
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: compact ? 6 : 12) {
             Text(result.message)
-                .font(GameFont.title(22))
+                .font(GameFont.title(compact ? 19 : 22))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
@@ -625,11 +626,11 @@ struct ResultCard: View {
                                 endPoint: .bottom
                             )
                         )
-                        .font(.system(size: 26, weight: .bold))
+                        .font(.system(size: compact ? 22 : 26, weight: .bold))
                     IngredientArt(id: item)
-                        .frame(width: 40, height: 40)
+                        .frame(width: compact ? 30 : 40, height: compact ? 30 : 40)
                     Text(item.displayName)
-                        .font(GameFont.headline(20))
+                        .font(GameFont.headline(compact ? 17 : 20))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Color(hex: 0x16345C), Color(hex: 0x2A5A9A)],
@@ -640,7 +641,7 @@ struct ResultCard: View {
                     Spacer()
                 }
                 .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.vertical, compact ? 4 : 8)
                 .background(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .fill(
@@ -653,7 +654,7 @@ struct ResultCard: View {
                 )
             }
         }
-        .padding(18)
+        .padding(compact ? 12 : 18)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(
@@ -694,7 +695,8 @@ struct RibbonTitle: View {
         AnimatedTextBanner(
             text: text,
             colors: [Color(hex: 0xFFE56A), Color(hex: 0xFFC93A), Color(hex: 0xFF9A3C)],
-            size: 30
+            size: 30,
+            lines: 1
         )
         .overlay(alignment: .leading) {
             Circle()

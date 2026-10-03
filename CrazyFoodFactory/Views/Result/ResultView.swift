@@ -12,23 +12,22 @@ struct ResultView: View {
             ZStack {
                 FactoryBackground(celebrate: true)
                 ConfettiView()
-                VStack(spacing: metrics.compact ? 14 : 20) {
+                VStack(spacing: metrics.compact ? 12 : 18) {
                     RibbonTitle(text: store.currentResult?.title ?? "Yummy!")
 
                     if let result = store.currentResult {
-                        FoodIllustrationView(
-                            food: result.food,
-                            placed: result.placed,
-                            size: metrics.art(metrics.compact ? 200 : 228, cap: 300),
-                            cuteFace: result.food == .burger
-                        )
-                        .bounceOn(true)
-
-                        ResultCard(result: result)
-                            .padding(.horizontal, 32)
+                        ViewThatFits(in: .vertical) {
+                            dish(result, art: metrics.art(metrics.compact ? 200 : 228, cap: 300), compact: false)
+                            dish(result, art: metrics.art(160, cap: 240), compact: false)
+                            dish(result, art: metrics.art(130, cap: 200), compact: true)
+                            dish(result, art: 96, compact: true)
+                            ResultCard(result: result, compact: true)
+                                .padding(.horizontal, 32)
+                        }
+                        .frame(maxHeight: .infinity)
+                    } else {
+                        Spacer(minLength: 8)
                     }
-
-                    Spacer(minLength: 8)
 
                     CrazyButton(title: "SHARE REWARD", icon: "square.and.arrow.up", kind: .play) {
                         shareReward()
@@ -64,6 +63,21 @@ struct ResultView: View {
         }
         .sheet(item: $shareItem) { item in
             ShareSheet(items: [item.image])
+        }
+    }
+
+    private func dish(_ result: FoodResult, art: CGFloat, compact: Bool) -> some View {
+        VStack(spacing: compact ? 8 : 14) {
+            FoodIllustrationView(
+                food: result.food,
+                placed: result.placed,
+                size: art,
+                cuteFace: result.food == .burger
+            )
+            .bounceOn(true)
+
+            ResultCard(result: result, compact: compact)
+                .padding(.horizontal, 32)
         }
     }
 
