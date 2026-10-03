@@ -65,16 +65,20 @@ struct FactoryMetrics: Equatable {
     }
 
     var chromeTop: CGFloat {
-        let base: CGFloat = pad ? (landscape ? 36 : 32) : 14
-        return max(safeTop, 0) + base
+        // Views already sit in the system safe area. Adding safeTop again
+        // stacked a second island-sized gap and shoved every screen down.
+        let extra: CGFloat = pad ? (landscape ? 10 : 8) : 4
+        return safeTop < 1 ? extra + (pad ? 14 : 10) : extra
     }
 
     var chromeSide: CGFloat {
-        max(max(safeLeading, safeTrailing), 0) + (pad ? 20 : 12)
+        let extra: CGFloat = pad ? 12 : 8
+        return max(safeLeading, safeTrailing) < 1 ? extra + 8 : extra
     }
 
     var chromeBottom: CGFloat {
-        max(safeBottom, 0) + (pad ? 14 : 8)
+        let extra: CGFloat = pad ? 10 : 6
+        return safeBottom < 1 ? extra + (pad ? 12 : 8) : extra
     }
 
     func type(_ base: CGFloat, cap: CGFloat? = nil) -> CGFloat {
