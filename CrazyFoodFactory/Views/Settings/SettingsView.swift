@@ -7,8 +7,6 @@ struct SettingsView: View {
     @State private var confirmReset = false
     @State private var showPrivacy = false
     @State private var showSupport = false
-    @State private var showOtherApps = false
-    @State private var showDeveloper = false
 
     var body: some View {
         GeometryReader { geo in
@@ -96,17 +94,6 @@ struct SettingsView: View {
                             }
                         }
 
-                        settingsCard(title: "From sreeo", icon: "sparkles", tint: Color(hex: 0xC8B6FF)) {
-                            VStack(spacing: 4) {
-                                navRow(title: "Other sreeo Apps", icon: "square.grid.2x2.fill", tint: Color(hex: 0xFF9A3C)) {
-                                    showOtherApps = true
-                                }
-                                navRow(title: "Developer Info", icon: "person.crop.rectangle.fill", tint: Color(hex: 0x4EC3FF)) {
-                                    showDeveloper = true
-                                }
-                            }
-                        }
-
                         Button {
                             confirmReset = true
                         } label: {
@@ -136,15 +123,11 @@ struct SettingsView: View {
                         .accessibilityLabel("Reset Progress")
                         .padding(.top, 4)
 
-                        VStack(spacing: 4) {
-                            Text(Brand.studio)
-                                .font(GameFont.caption(13))
-                            Text(Brand.copyright)
-                                .font(GameFont.caption(13))
-                        }
-                        .foregroundColor(GameTheme.navy.opacity(0.55))
-                        .multilineTextAlignment(.center)
-                        .padding(.bottom, 20)
+                        Text(Brand.copyright)
+                            .font(GameFont.caption(13))
+                            .foregroundColor(GameTheme.navy.opacity(0.55))
+                            .multilineTextAlignment(.center)
+                            .padding(.bottom, 20)
                     }
                     .padding(.horizontal, 18)
                 }
@@ -161,8 +144,6 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showPrivacy) { LegalPage(title: "Privacy Policy", bodyText: LegalCopy.privacy) }
         .sheet(isPresented: $showSupport) { LegalPage(title: "Support", bodyText: LegalCopy.support) }
-        .sheet(isPresented: $showOtherApps) { OtherAppsView() }
-        .sheet(isPresented: $showDeveloper) { DeveloperInfoView() }
         .statusBarHidden(true)
     }
 
