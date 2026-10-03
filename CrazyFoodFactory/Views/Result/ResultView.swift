@@ -53,6 +53,7 @@ struct ResultView: View {
             .factoryMetrics(metrics)
         }
         .statusBarHidden(true)
+        .askForReviewIfReady(store)
         .onAppear {
             AudioManager.shared.celebrate()
             if ProcessInfo.processInfo.arguments.contains("-openshare") {
@@ -84,14 +85,14 @@ struct ResultView: View {
     }
 
     private func advance() {
-        if store.completeLevelIfNeeded() {
+        switch store.advanceAfterDish() {
+        case .play:
+            router.go(.gameplay)
+        case .pickFood:
+            router.go(.foodSelection)
+        case .worldDone:
             AudioManager.shared.levelComplete()
             router.go(.levelComplete)
-        } else if let next = store.nextFood() {
-            store.select(next)
-            router.go(.gameplay)
-        } else {
-            router.go(.foodSelection)
         }
     }
 }

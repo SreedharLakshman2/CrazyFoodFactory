@@ -379,24 +379,15 @@ struct IngredientTray: View {
     }
 
     private var scrollHint: some View {
-        HStack(spacing: 0) {
-            LinearGradient(
-                colors: [Color.white.opacity(0), Color.white.opacity(0.88)],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-            .frame(width: 28)
-            Image(systemName: "chevron.compact.right")
-                .font(.system(size: 22, weight: .heavy))
-                .foregroundColor(GameTheme.navy.opacity(0.55))
-                .padding(.trailing, 4)
-                .phaseAnimator([false, true]) { content, bouncing in
-                    content.offset(x: bouncing ? 5 : 0)
-                }
-        }
-        .frame(maxHeight: .infinity)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
+        Image(systemName: "chevron.compact.right")
+            .font(.system(size: 22, weight: .heavy))
+            .foregroundColor(GameTheme.navy.opacity(0.45))
+            .padding(.trailing, 6)
+            .phaseAnimator([false, true]) { content, bouncing in
+                content.offset(x: bouncing ? 5 : 0)
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 
     private func jumpToFocus(_ proxy: ScrollViewProxy, animated: Bool) {

@@ -1,10 +1,13 @@
 import SwiftUI
+import StoreKit
 import UIKit
 
 struct DeveloperInfoView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.requestReview) private var requestReview
     @State private var showPrivacy = false
     @State private var showSupport = false
+    @State private var showOtherApps = false
 
     private var versionText: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -76,11 +79,18 @@ struct DeveloperInfoView: View {
 
                             VStack(spacing: 10) {
                                 CrazyButton(
-                                    title: "ALL SREEO APPS",
+                                    title: "OTHER SREEO APPS",
                                     icon: "square.grid.2x2.fill",
                                     kind: .play
                                 ) {
-                                    UIApplication.shared.open(DeveloperCatalog.storePage)
+                                    showOtherApps = true
+                                }
+                                CrazyButton(
+                                    title: "RATE \(Brand.name.uppercased())",
+                                    icon: "star.fill",
+                                    kind: .next
+                                ) {
+                                    requestReview()
                                 }
                                 Button("Privacy Policy") { showPrivacy = true }
                                     .font(GameFont.headline(metrics.type(16, cap: 20)))
@@ -108,6 +118,7 @@ struct DeveloperInfoView: View {
         }
         .sheet(isPresented: $showPrivacy) { LegalPage(title: "Privacy Policy", bodyText: LegalCopy.privacy) }
         .sheet(isPresented: $showSupport) { LegalPage(title: "Support", bodyText: LegalCopy.support) }
+        .sheet(isPresented: $showOtherApps) { OtherAppsView() }
         .statusBarHidden(true)
     }
 

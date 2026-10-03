@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 
 struct SettingsView: View {
@@ -7,6 +8,9 @@ struct SettingsView: View {
     @State private var confirmReset = false
     @State private var showPrivacy = false
     @State private var showSupport = false
+    @State private var showOtherApps = false
+    @State private var showDeveloper = false
+    @Environment(\.requestReview) private var requestReview
 
     var body: some View {
         GeometryReader { geo in
@@ -94,6 +98,20 @@ struct SettingsView: View {
                             }
                         }
 
+                        settingsCard(title: "From sreeo", icon: "sparkles", tint: Color(hex: 0x7C6BFF)) {
+                            VStack(spacing: 4) {
+                                navRow(title: "Developer Info", icon: "info.circle.fill", tint: Color(hex: 0x4EC3FF)) {
+                                    showDeveloper = true
+                                }
+                                navRow(title: "Other sreeo Apps", icon: "square.grid.2x2.fill", tint: Color(hex: 0xFF8A3D)) {
+                                    showOtherApps = true
+                                }
+                                navRow(title: "Rate \(Brand.name)", icon: "star.fill", tint: Color(hex: 0xFFE14A)) {
+                                    requestReview()
+                                }
+                            }
+                        }
+
                         Button {
                             confirmReset = true
                         } label: {
@@ -144,6 +162,8 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showPrivacy) { LegalPage(title: "Privacy Policy", bodyText: LegalCopy.privacy) }
         .sheet(isPresented: $showSupport) { LegalPage(title: "Support", bodyText: LegalCopy.support) }
+        .sheet(isPresented: $showOtherApps) { OtherAppsView() }
+        .sheet(isPresented: $showDeveloper) { DeveloperInfoView() }
         .statusBarHidden(true)
     }
 

@@ -41,6 +41,53 @@ final class GameStateStore: ObservableObject {
         remainingFoods.isEmpty && !currentLevel.requiredFoods.isEmpty
     }
 
+    enum AfterDish {
+        case play
+        case pickFood
+        case worldDone
+    }
+
+    /// After a cooked dish: next leftover in this level, else open the next kitchen.
+    func advanceAfterDish() -> AfterDish {
+        if let next = nextFood() {
+            select(next)
+            return .play
+        }
+
+        let finishingLast = save.currentLevel >= LevelCatalog.levelCount
+        if completeLevelIfNeeded() {
+            if finishingLast {
+                return .worldDone
+            }
+            return openCurrentKitchen()
+        }
+        return .pickFood
+    }
+
+    /// Level Complete already incremented the save. Start that kitchen.
+    func continueAfterLevelComplete() -> AfterDish {
+        if save.currentLevel >= LevelCatalog.levelCount && remainingFoods.isEmpty {
+            startLevel(save.currentLevel)
+            if nextFood() == nil {
+                return .worldDone
+            }
+        }
+        return openCurrentKitchen()
+    }
+
+    @discardableResult
+    private func openCurrentKitchen() -> AfterDish {
+        startLevel(save.currentLevel)
+        if currentLevel.requiredFoods.count > 1 {
+            return .pickFood
+        }
+        if let food = currentLevel.requiredFoods.first {
+            select(food)
+            return .play
+        }
+        return .pickFood
+    }
+
     func persist() {
         if let data = try? JSONEncoder().encode(save) {
             UserDefaults.standard.set(data, forKey: defaultsKey)
@@ -65,6 +112,7 @@ final class GameStateStore: ObservableObject {
 
     func applyResult(_ result: FoodResult) {
         currentResult = result
+        save.dishesCooked += 1
         if currentLevel.requiredFoods.contains(result.food) {
             if !sessionCompleted.contains(result.food) {
                 sessionCompleted.append(result.food)
@@ -112,6 +160,12 @@ final class GameStateStore: ObservableObject {
     func markSeenHowTo() {
         save.hasSeenHowTo = true
         save.hasSeenTitle = true
+        persist()
+    }
+
+    func markReviewPrompted() {
+        save.reviewPromptCount += 1
+        save.lastReviewPromptAt = Date().timeIntervalSince1970
         persist()
     }
 

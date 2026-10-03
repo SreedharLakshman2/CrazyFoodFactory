@@ -35,8 +35,14 @@ struct LevelCompleteView: View {
                     Spacer(minLength: 8)
 
                     CrazyButton(title: "NEXT LEVEL", icon: "arrow.right", kind: .next) {
-                        store.startLevel(store.save.currentLevel)
-                        router.go(.levelMap)
+                        switch store.continueAfterLevelComplete() {
+                        case .play:
+                            router.go(.gameplay)
+                        case .pickFood:
+                            router.go(.foodSelection)
+                        case .worldDone:
+                            router.go(.home)
+                        }
                     }
                     .factoryButtonWidth()
                     .padding(.horizontal, 32)
@@ -52,6 +58,7 @@ struct LevelCompleteView: View {
             .factoryMetrics(metrics)
         }
         .statusBarHidden(true)
+        .askForReviewIfReady(store, delay: 1.6)
         .onAppear { AudioManager.shared.levelComplete() }
     }
 
