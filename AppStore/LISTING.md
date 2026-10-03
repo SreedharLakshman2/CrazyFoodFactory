@@ -142,15 +142,15 @@ Upload **portrait** images.
 Upload order (this is the App Store gallery order):
 
 1. `01-home.png` — Let’s cook!
-2. `02-foods.png` — So many kitchens!
+2. `02-foods.png` — Pick a dish!
 3. `03-pizza.png` — Build a pizza
-4. `04-dosa.png` — Dosa & chutney
+4. `04-dosa.png` — World kitchens
 5. `05-school.png` — Learn foods
-6. `06-result.png` — You did it
+6. `06-result.png` — You did it!
 7. `07-howto.png` — Easy to play
 
 Each iPhone file is 1320 × 2868. Each iPad file is 2064 × 2752.
-They are framed marketing shots: gradient header + title + the **real app UI** captured from the simulator.
+They are framed marketing shots: the same sreeo studio layout on iPhone and iPad (SREEO STUDIO, title, orange bar, white device, food on the corners, NO ADS / AGES pills) plus the **real app UI** captured from the simulator.
 
 Regenerate:
 

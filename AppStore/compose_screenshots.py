@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Compose App Store marketing screenshots from real Kido Chef UI captures."""
+"""App Store frames that look like one studio set on iPhone and iPad.
+
+Shared vertical rhythm (header band, device slot, badge band) so both sizes
+line up the way Monkey Mayhem does: SREEO STUDIO, title, orange bar, white
+device, food on the top corners, NO ADS / AGES pills. Real simulator UI is
+never replaced.
+"""
 
 from __future__ import annotations
 
@@ -17,73 +23,55 @@ OUT_IPAD = ROOT / "AppStore" / "screenshots" / "ipad-13"
 ART = ROOT / "CrazyFoodFactory" / "Assets.xcassets"
 
 FONT_ROUNDED = "/System/Library/Fonts/SFNSRounded.ttf"
-FONT_ARIAL_ROUND = "/System/Library/Fonts/Supplemental/Arial Rounded Bold.ttf"
+FONT_ARIAL = "/System/Library/Fonts/Supplemental/Arial Rounded Bold.ttf"
 
 IPHONE_SIZE = (1320, 2868)
 IPAD_SIZE = (2064, 2752)
-NAVY = (22, 52, 92)
+
+NAVY = (28, 32, 56)
+PINK = (255, 79, 163)
+ORANGE = (255, 154, 60)
+CREAM = (255, 248, 238)
+YELLOW = (255, 225, 74)
+BADGE_PINK = (255, 138, 212)
+SUB_INK = (28, 32, 56, 168)
 
 
 @dataclass
 class Slide:
     source: str
-    kicker: str
     title: str
     subtitle: str
-    top: str
-    bottom: str
     art: tuple[str, ...]
 
 
 SLIDES = [
-    Slide("01-home", "KIDO CHEF", "Let’s cook!", "Tap, mix, and make yummy food.", "4EC3FF", "FFE9A8", ("ArtPizza", "ArtIceCream")),
-    Slide("02-foods", "PICK A DISH", "So many kitchens!", "Pizza, dosa, nachos, ramen & more.", "FFE56A", "FFD0F0", ("ArtNachos", "ArtBiryani")),
-    Slide("03-pizza", "TAP TOPPINGS", "Build a pizza", "Kids cook with their fingers.", "FF8A7A", "FFF4D6", ("IngCheese", "IngTomato")),
-    Slide("04-dosa", "WORLD KITCHENS", "Dosa & chutney", "South Indian, Mexican, and more.", "7EE08A", "E8F8FF", ("ArtIdli", "ArtMangoLassi")),
-    Slide("05-school", "INGREDIENT SCHOOL", "Learn foods", "What each topping is, and how we cook it.", "C8B6FF", "E8F7FF", ("IngMango", "IngPaneer")),
-    Slide("06-result", "YUMMY", "You did it!", "Stars, cheers, and a shareable card.", "FFB6E8", "FFE56A", ("ArtCupcake", "ArtDonut")),
-    Slide("07-howto", "FOR LITTLE CHEFS", "Easy to play", "Offline. No login. Just cooking fun.", "9FE4FF", "FFF8E8", ("ArtFalafel", "ArtRamen")),
+    Slide("01-home", "Let’s cook!", "Tap, mix, and make yummy food.", ("ArtPizza", "ArtIceCream")),
+    Slide("02-foods", "Pick a dish!", "Pizza, dosa, nachos, ramen & more.", ("ArtNachos", "ArtBiryani")),
+    Slide("03-pizza", "Build a pizza", "Kids cook with their fingers.", ("IngCheese", "IngTomato")),
+    Slide("04-dosa", "World kitchens", "South Indian, Mexican, and more.", ("ArtIdli", "ArtMangoLassi")),
+    Slide("05-school", "Learn foods", "What each topping is — and how we cook it.", ("IngMango", "IngPaneer")),
+    Slide("06-result", "You did it!", "Stars, cheers, and a shareable card.", ("ArtCupcake", "ArtDonut")),
+    Slide("07-howto", "Easy to play", "Offline. No login. Just cooking fun.", ("ArtFalafel", "ArtRamen")),
 ]
 
 
-def hex_color(value: str) -> tuple[int, int, int]:
-    value = value.lstrip("#")
-    return (int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16))
-
-
-def font(size: int) -> ImageFont.FreeTypeFont:
-    for path in (FONT_ROUNDED, FONT_ARIAL_ROUND):
-        if os.path.exists(path):
-            return ImageFont.truetype(path, size)
-    return ImageFont.load_default()
-
-
-def lerp(a: tuple[int, int, int], b: tuple[int, int, int], t: float) -> tuple[int, int, int]:
-    return (
-        int(a[0] + (b[0] - a[0]) * t),
-        int(a[1] + (b[1] - a[1]) * t),
-        int(a[2] + (b[2] - a[2]) * t),
-    )
-
-
-def vertical_gradient(size: tuple[int, int], top: str, bottom: str) -> Image.Image:
-    w, h = size
-    img = Image.new("RGB", size)
-    start, end = hex_color(top), hex_color(bottom)
-    cream = hex_color("FFF8EE")
-    px = img.load()
-    for y in range(h):
-        t = y / max(h - 1, 1)
-        color = lerp(start, cream, min(1, t * 1.15)) if t < 0.45 else lerp(cream, end, (t - 0.45) / 0.55)
-        for x in range(w):
-            px[x, y] = color
-    return img
+def font(size: int, weight: str = "Black") -> ImageFont.FreeTypeFont:
+    size = max(10, int(size))
+    if os.path.exists(FONT_ROUNDED):
+        face = ImageFont.truetype(FONT_ROUNDED, size)
+        try:
+            face.set_variation_by_name(weight)
+            return face
+        except Exception:
+            return face
+    return ImageFont.truetype(FONT_ARIAL, size)
 
 
 def rounded(im: Image.Image, radius: int) -> Image.Image:
     im = im.convert("RGBA")
     mask = Image.new("L", im.size, 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, im.width, im.height), radius=radius, fill=255)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, im.width - 1, im.height - 1), radius=radius, fill=255)
     im.putalpha(mask)
     return im
 
@@ -98,122 +86,234 @@ def find_art(name: str) -> Path | None:
     return None
 
 
-def load_art(name: str, box: int) -> Image.Image | None:
+def load_art(name: str, box: int, angle: float = 0) -> Image.Image | None:
     path = find_art(name)
     if path is None:
         return None
     art = Image.open(path).convert("RGBA")
+    pix = art.load()
+    w, h = art.size
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = pix[x, y]
+            if a > 0 and r >= 242 and g >= 242 and b >= 242:
+                pix[x, y] = (r, g, b, 0)
     art.thumbnail((box, box), Image.Resampling.LANCZOS)
+    if angle:
+        art = art.rotate(angle, resample=Image.Resampling.BICUBIC, expand=True)
     return art
 
 
-def fit_device(path: Path, max_w: int, max_h: int, radius: int) -> Image.Image:
-    shot = Image.open(path).convert("RGBA")
-    shot.thumbnail((max_w, max_h), Image.Resampling.LANCZOS)
-    bezel = max(12, int(shot.width * 0.018))
-    framed = Image.new("RGBA", (shot.width + bezel * 2, shot.height + bezel * 2), (0, 0, 0, 0))
-    plate = rounded(Image.new("RGBA", framed.size, (255, 255, 255, 255)), radius + bezel)
-    framed.paste(plate, (0, 0), plate)
-    inner = rounded(shot, radius)
-    framed.paste(inner, (bezel, bezel), inner)
-    return framed
+def prep_screen(im: Image.Image, iphone: bool) -> Image.Image:
+    """Trim island / home indicator so the white bezel stays clean."""
+    w, h = im.size
+    if iphone:
+        top = int(h * 0.048)
+        bottom = h - int(h * 0.014)
+    else:
+        top = int(h * 0.018)
+        bottom = h - int(h * 0.012)
+    return im.crop((0, top, w, max(top + 10, bottom))).convert("RGBA")
 
 
-def drop_shadow(im: Image.Image, blur: int, dy: int) -> Image.Image:
-    pad = blur * 3
-    canvas = Image.new("RGBA", (im.width + pad * 2, im.height + pad * 2 + dy), (0, 0, 0, 0))
-    shadow = Image.new("RGBA", im.size, (22, 52, 92, 0))
-    alpha = im.split()[-1].filter(ImageFilter.GaussianBlur(blur))
-    shadow.putalpha(alpha.point(lambda a: min(140, a)))
-    canvas.paste(shadow, (pad, pad + dy), shadow)
-    canvas.paste(im, (pad, pad), im)
-    return canvas
-
-
-def center_text(draw: ImageDraw.ImageDraw, text: str, y: int, fnt: ImageFont.FreeTypeFont, fill, width: int) -> int:
-    bbox = draw.textbbox((0, 0), text, font=fnt)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    draw.text(((width - tw) / 2, y), text, font=fnt, fill=fill)
-    return th
-
-
-def candy_title(base: Image.Image, text: str, y: int, fnt: ImageFont.FreeTypeFont) -> int:
-    draw = ImageDraw.Draw(base)
-    bbox = draw.textbbox((0, 0), text, font=fnt)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    x = int((base.width - tw) / 2)
-    pad_x, pad_y = 16, 18
-    for dx, dy in ((-3, 0), (3, 0), (0, -3), (0, 3), (-2, -2), (2, 2)):
-        draw.text((x + dx, y + dy), text, font=fnt, fill=(255, 255, 255, 220))
-    band = Image.new("RGBA", (max(tw, 1) + pad_x * 2, max(th, 1) + pad_y * 2), (0, 0, 0, 0))
-    gp = band.load()
-    start, end = hex_color("FFB300"), hex_color("E02060")
-    for gx in range(band.width):
-        color = lerp(start, end, gx / max(band.width - 1, 1)) + (255,)
-        for gy in range(band.height):
-            gp[gx, gy] = color
-    mask = Image.new("L", band.size, 0)
-    ImageDraw.Draw(mask).text((pad_x, pad_y), text, font=fnt, fill=255)
-    colored = Image.new("RGBA", base.size, (0, 0, 0, 0))
-    colored.paste(band, (x - pad_x, y - pad_y), mask)
-    base.alpha_composite(colored)
-    return th
-
-
-def compose(slide: Slide, source: Path, size: tuple[int, int], dest: Path) -> None:
+def studio_canvas(size: tuple[int, int]) -> Image.Image:
     w, h = size
-    header = int(h * 0.22) if h / w > 1.8 else int(h * 0.24)
-    canvas = vertical_gradient(size, slide.top, slide.bottom).convert("RGBA")
-    draw = ImageDraw.Draw(canvas, "RGBA")
+    base = Image.new("RGBA", size, CREAM)
+    blobs = Image.new("RGBA", size, (0, 0, 0, 0))
+    d = ImageDraw.Draw(blobs)
+    d.ellipse((-int(w * 0.30), -int(h * 0.10), int(w * 0.64), int(h * 0.30)), fill=(168, 230, 255, 188))
+    d.ellipse((int(w * 0.40), -int(h * 0.12), int(w * 1.24), int(h * 0.28)), fill=(255, 226, 140, 200))
+    d.ellipse((-int(w * 0.22), int(h * 0.64), int(w * 0.50), int(h * 1.14)), fill=(186, 255, 214, 140))
+    d.ellipse((int(w * 0.50), int(h * 0.70), int(w * 1.26), int(h * 1.16)), fill=(140, 214, 255, 150))
+    d.ellipse((int(w * 0.68), int(h * 0.18), int(w * 1.20), int(h * 0.42)), fill=(255, 196, 230, 88))
+    blobs = blobs.filter(ImageFilter.GaussianBlur(int(min(w, h) * 0.07)))
+    return Image.alpha_composite(base, blobs)
 
-    # playful circles
-    for cx, cy, r, alpha in (
-        (int(w * 0.08), int(h * 0.06), int(w * 0.10), 40),
-        (int(w * 0.94), int(h * 0.08), int(w * 0.12), 36),
-        (int(w * 0.9), int(h * 0.94), int(w * 0.10), 28),
-    ):
-        draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=hex_color(slide.top) + (alpha,))
 
-    kicker_f = font(max(22, int(w * 0.034)))
-    title_f = font(max(44, int(w * 0.078)))
-    sub_f = font(max(22, int(w * 0.032)))
+def text_size(fnt: ImageFont.FreeTypeFont, text: str) -> tuple[int, int]:
+    bbox = fnt.getbbox(text)
+    return bbox[2] - bbox[0], bbox[3] - bbox[1]
 
-    y = int(h * 0.038)
-    center_text(draw, slide.kicker, y, kicker_f, NAVY, w)
-    y += int(h * 0.042)
-    candy_title(canvas, slide.title, y, title_f)
-    y += int(h * 0.078)
-    center_text(draw, slide.subtitle, y, sub_f, NAVY, w)
 
-    art_box = int(min(w, h) * 0.11)
-    left = load_art(slide.art[0], art_box) if slide.art else None
-    right = load_art(slide.art[1], art_box) if len(slide.art) > 1 else None
-    if left:
-        canvas.alpha_composite(left, (int(w * 0.06), int(h * 0.045)))
-    if right:
-        canvas.alpha_composite(right, (w - right.width - int(w * 0.06), int(h * 0.04)))
+def fit_font(text: str, target: int, max_width: int, weight: str = "Black") -> ImageFont.FreeTypeFont:
+    size = target
+    while size > 18:
+        face = font(size, weight)
+        if text_size(face, text)[0] <= max_width:
+            return face
+        size -= 2
+    return font(max(18, size), weight)
 
-    bottom_pad = int(h * 0.028)
-    device = fit_device(
-        source,
-        max_w=int(w * 0.86),
-        max_h=int(h - header - bottom_pad),
-        radius=int(min(w, h) * 0.048),
+
+def draw_tracked(draw: ImageDraw.ImageDraw, text: str, y: int, fnt: ImageFont.FreeTypeFont, fill, canvas_w: int, tracking: float) -> int:
+    widths = [fnt.getlength(ch) for ch in text]
+    total = sum(widths) + tracking * max(0, len(text) - 1)
+    x = (canvas_w - total) / 2
+    for ch, cw in zip(text, widths):
+        draw.text((x, y), ch, font=fnt, fill=fill)
+        x += cw + tracking
+    return text_size(fnt, "Ag")[1]
+
+
+def wrap_lines(text: str, fnt: ImageFont.FreeTypeFont, max_width: int) -> list[str]:
+    words = text.split()
+    lines: list[str] = []
+    current = ""
+    for word in words:
+        trial = f"{current} {word}".strip()
+        if text_size(fnt, trial)[0] <= max_width:
+            current = trial
+        else:
+            if current:
+                lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines or [text]
+
+
+def draw_wrapped(draw: ImageDraw.ImageDraw, text: str, y: int, fnt: ImageFont.FreeTypeFont, fill, canvas_w: int, max_width: int) -> int:
+    lines = wrap_lines(text, fnt, max_width)
+    line_h = text_size(fnt, "Ag")[1]
+    gap = max(6, int(line_h * 0.22))
+    for i, line in enumerate(lines):
+        tw, _ = text_size(fnt, line)
+        draw.text(((canvas_w - tw) / 2, y), line, font=fnt, fill=fill)
+        y += line_h + (gap if i < len(lines) - 1 else 0)
+    return y
+
+
+def pill(canvas: Image.Image, text: str, fill: tuple[int, int, int], cx: int, cy: int, fnt: ImageFont.FreeTypeFont) -> tuple[int, int]:
+    draw = ImageDraw.Draw(canvas)
+    tw, th = text_size(fnt, text)
+    pad_x, pad_y = int(fnt.size * 0.70), int(fnt.size * 0.36)
+    w, h = tw + pad_x * 2, th + pad_y * 2
+    x0, y0 = int(cx - w / 2), int(cy - h / 2)
+    draw.rounded_rectangle((x0, y0, x0 + w, y0 + h), radius=h // 2, fill=fill)
+    bbox = fnt.getbbox(text)
+    draw.text((x0 + pad_x - bbox[0], y0 + pad_y - bbox[1]), text, font=fnt, fill=NAVY)
+    return w, h
+
+
+def device_frame(screen: Image.Image, max_w: int, max_h: int, iphone: bool) -> Image.Image:
+    screen = screen.convert("RGBA")
+    bezel = max(18, int(min(max_w, max_h) * (0.022 if iphone else 0.016)))
+    inner_w = max_w - bezel * 2
+    inner_h = max_h - bezel * 2
+    scale = min(inner_w / screen.width, inner_h / screen.height)
+    sw = max(1, int(screen.width * scale))
+    sh = max(1, int(screen.height * scale))
+    screen = screen.resize((sw, sh), Image.Resampling.LANCZOS)
+    radius = int(min(sw, sh) * (0.105 if iphone else 0.048))
+    screen = rounded(screen, radius)
+
+    fw, fh = sw + bezel * 2, sh + bezel * 2
+    body = Image.new("RGBA", (fw, fh), (0, 0, 0, 0))
+    ImageDraw.Draw(body).rounded_rectangle(
+        (0, 0, fw - 1, fh - 1),
+        radius=radius + bezel,
+        fill=(255, 255, 255, 255),
     )
-    shadowed = drop_shadow(device, blur=max(12, int(w * 0.018)), dy=int(h * 0.006))
-    while shadowed.height > h - header - bottom_pad and shadowed.height > 200:
-        device = device.resize((int(device.width * 0.96), int(device.height * 0.96)), Image.Resampling.LANCZOS)
-        shadowed = drop_shadow(device, blur=max(12, int(w * 0.018)), dy=int(h * 0.006))
-    x = (w - shadowed.width) // 2
-    y_shot = header + max(0, (h - header - bottom_pad - shadowed.height) // 2)
-    canvas.alpha_composite(shadowed, (x, y_shot))
+    body.alpha_composite(screen, (bezel, bezel))
+    return body
+
+
+def compose(slide: Slide, source: Path, size: tuple[int, int], dest: Path, iphone: bool) -> None:
+    w, h = size
+    canvas = studio_canvas(size)
+    draw = ImageDraw.Draw(canvas)
+
+    # Same bands on both devices so the App Store pair lines up.
+    header_bottom = int(h * 0.168)
+    footer_top = int(h * 0.918)
+    text_width = int(w * 0.86)
+
+    kicker_f = font(max(20, int(h * 0.017)), "Heavy")
+    title_target = max(54, int(h * (0.042 if iphone else 0.048)))
+    title_f = fit_font(slide.title, title_target, text_width, "Black")
+    sub_f = font(max(18, int(h * (0.0155 if iphone else 0.0168))), "Semibold")
+    badge_f = font(max(16, int(h * 0.0138)), "Heavy")
+
+    kicker_h = text_size(kicker_f, "SREEO STUDIO")[1]
+    title_h = text_size(title_f, slide.title)[1]
+    sub_lines = wrap_lines(slide.subtitle, sub_f, text_width)
+    sub_h = text_size(sub_f, "Ag")[1]
+    sub_gap = max(6, int(sub_h * 0.22))
+    sub_block = len(sub_lines) * sub_h + max(0, len(sub_lines) - 1) * sub_gap
+    bar_h = max(7, int(h * 0.0042))
+    stack_gap = int(h * 0.010)
+    stack_h = kicker_h + stack_gap + title_h + int(h * 0.008) + sub_block + int(h * 0.012) + bar_h
+    y = max(int(h * 0.028), (header_bottom - stack_h) // 2)
+
+    draw_tracked(draw, "SREEO STUDIO", y, kicker_f, PINK, w, tracking=max(2.4, w * 0.0036))
+    y += kicker_h + stack_gap
+    tw, _ = text_size(title_f, slide.title)
+    draw.text(((w - tw) / 2, y), slide.title, font=title_f, fill=NAVY)
+    y += title_h + int(h * 0.008)
+    y = draw_wrapped(draw, slide.subtitle, y, sub_f, SUB_INK, w, text_width)
+    y += int(h * 0.012)
+    bar_w = int(min(w * 0.12, 220))
+    draw.rounded_rectangle(
+        ((w - bar_w) / 2, y, (w + bar_w) / 2, y + bar_h),
+        radius=bar_h // 2,
+        fill=ORANGE,
+    )
+
+    slot_top = header_bottom + int(h * 0.006)
+    slot_bottom = footer_top - int(h * 0.008)
+    max_w = int(w * (0.86 if iphone else 0.88))
+    max_h = max(40, slot_bottom - slot_top)
+    screen = prep_screen(Image.open(source), iphone=iphone)
+    phone = device_frame(screen, max_w, max_h, iphone=iphone)
+
+    px = (w - phone.width) // 2
+    # Pin the device under the header. Leftover space stays above the pills.
+    py = slot_top + max(0, min(int(h * 0.008), (max_h - phone.height) // 6))
+
+    shadow = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+    radius = int(min(phone.width, phone.height) * (0.12 if iphone else 0.06))
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        (px + 8, py + 18, px + phone.width + 4, py + phone.height + 22),
+        radius=radius,
+        fill=(40, 64, 96, 64),
+    )
+    canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(26)))
+    canvas.alpha_composite(phone, (px, py))
+
+    # Same corner anchors on both sizes. iPad art is a bit smaller so it
+    # sits on the bezel instead of covering the in-app chrome.
+    art_box = int(phone.width * (0.22 if iphone else 0.155))
+    left = load_art(slide.art[0], art_box, angle=-18) if slide.art else None
+    right = load_art(slide.art[1], art_box, angle=14) if len(slide.art) > 1 else None
+    if left:
+        lx = max(-int(left.width * 0.08), px - int(left.width * 0.46))
+        ly = py - int(left.height * 0.34)
+        canvas.alpha_composite(left, (lx, ly))
+    if right:
+        rx = min(w - int(right.width * 0.92), px + phone.width - int(right.width * 0.54))
+        ry = py - int(right.height * 0.28)
+        canvas.alpha_composite(right, (rx, ry))
+
+    badge_y = int((footer_top + h) / 2)
+
+    def pill_width(label: str) -> int:
+        tw, _ = text_size(badge_f, label)
+        return tw + int(badge_f.size * 0.70) * 2
+
+    w1, w2 = pill_width("NO ADS"), pill_width("AGES 4–10")
+    gap = int(w * 0.028)
+    pair = w1 + gap + w2
+    x1 = w // 2 - pair // 2 + w1 // 2
+    x2 = x1 + w1 // 2 + gap + w2 // 2
+    pill(canvas, "NO ADS", YELLOW, x1, badge_y, badge_f)
+    pill(canvas, "AGES 4–10", BADGE_PINK, x2, badge_y, badge_f)
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     canvas.convert("RGB").save(dest, "PNG", optimize=True)
-    print(f"wrote {dest.name} {w}x{h}")
+    print(f"wrote {dest.parent.name}/{dest.name} device={phone.size} origin=({px},{py})")
 
 
-def run_folder(raw: Path, out: Path, size: tuple[int, int]) -> None:
+def run_folder(raw: Path, out: Path, size: tuple[int, int], iphone: bool) -> None:
     if not raw.exists():
         print(f"skip missing {raw}")
         return
@@ -223,12 +323,12 @@ def run_folder(raw: Path, out: Path, size: tuple[int, int]) -> None:
         if not src.exists():
             print(f"missing {src}")
             continue
-        compose(slide, src, size, out / f"{slide.source}.png")
+        compose(slide, src, size, out / f"{slide.source}.png", iphone=iphone)
 
 
 def main() -> None:
-    run_folder(RAW_IPHONE, OUT_IPHONE, IPHONE_SIZE)
-    run_folder(RAW_IPAD, OUT_IPAD, IPAD_SIZE)
+    run_folder(RAW_IPHONE, OUT_IPHONE, IPHONE_SIZE, iphone=True)
+    run_folder(RAW_IPAD, OUT_IPAD, IPAD_SIZE, iphone=False)
 
 
 if __name__ == "__main__":

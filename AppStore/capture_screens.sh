@@ -57,7 +57,7 @@ capture_set() {
     xcrun simctl terminate "$udid" "$BUNDLE" >/dev/null 2>&1 || true
     sleep 0.35
     xcrun simctl launch "$udid" "$BUNDLE" "$@" >/dev/null
-    sleep 2.2
+    sleep 3.4
     if [[ -n "$display" ]]; then
       xcrun simctl io "$udid" screenshot --display="$display" "$dest/${name}.png"
     else

@@ -40,8 +40,6 @@ struct HowToPlayView: View {
                     }
                     .padding(.horizontal, metrics.pad ? 28 : 20)
 
-                    if metrics.pad && metrics.compact == false { Spacer(minLength: 8) }
-
                     pageCard(at: page, metrics: metrics)
                         .id(page)
                         .gesture(
@@ -75,8 +73,6 @@ struct HowToPlayView: View {
                     }
                     .factoryButtonWidth()
                     .padding(.horizontal, metrics.pad ? 80 : 36)
-
-                    if metrics.pad && metrics.compact == false { Spacer(minLength: 8) }
                 }
                 .factoryLandingWidth()
                 .padding(.top, metrics.chromeTop)

@@ -31,6 +31,8 @@ struct HomeView: View {
                     }
                     .padding(.horizontal, 8)
 
+                    if metrics.pad { Spacer(minLength: 6) }
+
                     BrandWordmark(
                         large: !metrics.compact,
                         scale: metrics.compact ? 0.82 : (metrics.pad ? min(metrics.scale, 1.28) : 1)
@@ -43,8 +45,8 @@ struct HomeView: View {
                         .padding(.horizontal, metrics.pad ? 48 : 28)
 
                     chefStage(metrics: metrics)
-                        .frame(minHeight: metrics.compact ? 168 : 220)
-                        .frame(maxHeight: .infinity)
+                        .frame(minHeight: metrics.compact ? 168 : (metrics.pad ? 260 : 220))
+                        .frame(maxHeight: metrics.pad ? min(geo.size.height * 0.38, 400) : .infinity)
 
                     LearnIngredientsIngress(compact: metrics.compact) {
                         router.go(.ingredientSchool)
@@ -56,6 +58,8 @@ struct HomeView: View {
                     }
                     .factoryButtonWidth()
                     .padding(.horizontal, metrics.pad ? 72 : 40)
+
+                    if metrics.pad { Spacer(minLength: 6) }
                 }
                 .factoryLandingWidth()
                 .padding(.top, metrics.chromeTop)
