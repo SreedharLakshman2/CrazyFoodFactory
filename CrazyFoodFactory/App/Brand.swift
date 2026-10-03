@@ -5,6 +5,7 @@ enum Brand {
     static let tagline = "Cook • Mix • Create • Have Fun!"
     static let company = "Sai Laksha Technologies"
     static let studio = "sreeo"
+    static let developer = "Sreedhar Lakshmanan"
     static let copyright = "© 2026 Sai Laksha Technologies"
     static let supportURL = URL(string: "https://sreedharlakshman2.github.io/CrazyFoodFactory/")!
     static let privacyURL = URL(string: "https://sreedharlakshman2.github.io/CrazyFoodFactory/privacy.html")!
