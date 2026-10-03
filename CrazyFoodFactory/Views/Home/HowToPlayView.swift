@@ -25,25 +25,24 @@ struct HowToPlayView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let pad = FactoryLayout.isRegular(geo.size)
-            let scale = FactoryLayout.scale(in: geo.size)
+            let metrics = FactoryMetrics.make(geo)
             ZStack {
                 FactoryBackground()
 
-                VStack(spacing: pad ? 18 : 12) {
+                VStack(spacing: metrics.compact ? 12 : 18) {
                     HStack {
                         Spacer()
                         Button("Skip") { finish() }
-                            .font(GameFont.headline(pad ? 18 : 16))
+                            .font(GameFont.headline(metrics.type(16, cap: 22)))
                             .foregroundColor(GameTheme.navy)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 8)
                     }
-                    .padding(.horizontal, pad ? 28 : 20)
+                    .padding(.horizontal, metrics.pad ? 28 : 20)
 
-                    if pad { Spacer(minLength: 8) }
+                    if metrics.pad && metrics.compact == false { Spacer(minLength: 8) }
 
-                    pageCard(at: page, scale: scale, pad: pad)
+                    pageCard(at: page, metrics: metrics)
                         .id(page)
                         .gesture(
                             DragGesture(minimumDistance: 48).onEnded { value in
@@ -55,11 +54,11 @@ struct HowToPlayView: View {
                             }
                         )
 
-                    HStack(spacing: pad ? 10 : 8) {
+                    HStack(spacing: metrics.pad ? 10 : 8) {
                         ForEach(0..<pages.count, id: \.self) { index in
                             Circle()
                                 .fill(index == page ? GameTheme.navy : GameTheme.navy.opacity(0.22))
-                                .frame(width: pad ? 10 : 8, height: pad ? 10 : 8)
+                                .frame(width: metrics.pad ? 10 : 8, height: metrics.pad ? 10 : 8)
                         }
                     }
                     .padding(.top, 4)
@@ -75,24 +74,25 @@ struct HowToPlayView: View {
                         }
                     }
                     .factoryButtonWidth()
-                    .padding(.horizontal, pad ? 80 : 36)
-                    .padding(.bottom, pad ? 28 : 18)
+                    .padding(.horizontal, metrics.pad ? 80 : 36)
 
-                    if pad { Spacer(minLength: 8) }
+                    if metrics.pad && metrics.compact == false { Spacer(minLength: 8) }
                 }
                 .factoryLandingWidth()
-                .padding(.top, 8)
+                .padding(.top, metrics.chromeTop)
+                .padding(.bottom, metrics.chromeBottom)
             }
+            .factoryMetrics(metrics)
         }
         .statusBarHidden(true)
     }
 
-    private func pageCard(at index: Int, scale: CGFloat, pad: Bool) -> some View {
+    private func pageCard(at index: Int, metrics: FactoryMetrics) -> some View {
         let item = pages[index]
-        return VStack(spacing: pad ? 24 : 18) {
-            scene(for: item, index: index, scale: scale, pad: pad)
+        return VStack(spacing: metrics.compact ? 16 : 24) {
+            scene(for: item, index: index, metrics: metrics)
             Text(item.title)
-                .font(GameFont.title(min(26 * scale, 36)))
+                .font(GameFont.title(metrics.type(26, cap: 38)))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
@@ -102,27 +102,27 @@ struct HowToPlayView: View {
                 )
                 .multilineTextAlignment(.center)
             Text(item.body)
-                .font(GameFont.body(min(17 * scale, 22)))
+                .font(GameFont.body(metrics.type(17, cap: 24)))
                 .foregroundColor(GameTheme.navy.opacity(0.72))
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, pad ? 16 : 8)
+                .padding(.horizontal, metrics.pad ? 16 : 8)
             if index == 1 {
-                schoolTeaser(scale: scale)
+                schoolTeaser(metrics: metrics)
             }
         }
-        .padding(pad ? 32 : 22)
+        .padding(metrics.compact ? 20 : (metrics.pad ? 32 : 22))
         .background(
-            RoundedRectangle(cornerRadius: pad ? 40 : 32, style: .continuous)
+            RoundedRectangle(cornerRadius: metrics.pad ? 40 : 32, style: .continuous)
                 .fill(Color.white)
         )
         .shadow(color: Color.black.opacity(0.08), radius: 12, y: 6)
-        .padding(.horizontal, pad ? 40 : 22)
+        .padding(.horizontal, metrics.pad ? 40 : 22)
     }
 
-    private func schoolTeaser(scale: CGFloat) -> some View {
+    private func schoolTeaser(metrics: FactoryMetrics) -> some View {
         VStack(spacing: 10) {
             Text("Tomato is a juicy fruit used like a veggie. Chefs slice it for salsa and sandwiches.")
-                .font(GameFont.caption(min(14 * scale, 17)))
+                .font(GameFont.caption(metrics.type(14, cap: 20)))
                 .foregroundColor(GameTheme.navy.opacity(0.7))
                 .multilineTextAlignment(.center)
             if onOpenSchool != nil {
@@ -131,7 +131,7 @@ struct HowToPlayView: View {
                     onOpenSchool?()
                 } label: {
                     Text("See ingredients!")
-                        .font(GameFont.headline(min(16 * scale, 20)))
+                        .font(GameFont.headline(metrics.type(16, cap: 22)))
                         .foregroundColor(.white)
                         .padding(.horizontal, 18)
                         .padding(.vertical, 10)
@@ -144,31 +144,23 @@ struct HowToPlayView: View {
     }
 
     @ViewBuilder
-    private func scene(for item: Page, index: Int, scale: CGFloat, pad: Bool) -> some View {
+    private func scene(for item: Page, index: Int, metrics: FactoryMetrics) -> some View {
         if index == 1 {
-            HStack(spacing: pad ? 28 : 22) {
+            HStack(spacing: metrics.pad ? 28 : 22) {
                 IngredientCard(ingredient: Ingredient(id: .tomato), action: {})
                 IngredientCard(ingredient: Ingredient(id: .cheese), action: {})
                 IngredientCard(ingredient: Ingredient(id: .lettuce), action: {})
             }
             .allowsHitTesting(false)
-            .scaleEffect(pad ? 1.2 : 1)
-            .frame(height: pad ? 150 : 120)
+            .frame(height: metrics.compact ? 120 : (metrics.pad ? 150 : 120))
         } else {
-            let chef = min(max(150 * scale, pad ? 220 : 150), pad ? 280 : 200)
-            let food = min(58 * scale, pad ? 96 : 72)
-            let spread = chef / 150
-            ZStack {
-                ChefCharacter(pose: index == 2 ? .celebrating : .idle, size: chef, showsSpatula: true)
-                ForEach(Array(item.foods.enumerated()), id: \.element) { i, foodType in
-                    FoodIllustrationView(food: foodType, size: food)
-                        .offset(
-                            x: CGFloat([-110, 110, -90, 96][i % 4]) * spread,
-                            y: CGFloat([-20, -8, 56, 64][i % 4]) * spread
-                        )
-                }
-            }
-            .frame(height: chef + 50 * spread)
+            ChefFoodStage(
+                pose: index == 2 ? .celebrating : .idle,
+                foods: item.foods,
+                chefSize: metrics.art(metrics.compact ? 140 : 168, cap: metrics.pad ? 240 : 180),
+                foodSize: metrics.art(64, cap: metrics.pad ? 92 : 72)
+            )
+            .frame(height: metrics.compact ? 200 : (metrics.pad ? 280 : 220))
         }
     }
 

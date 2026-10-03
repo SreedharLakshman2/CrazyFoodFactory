@@ -7,14 +7,11 @@ struct HomeView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let short = geo.size.height < 720
-            let pad = FactoryLayout.isRegular(geo.size)
-            let scale = FactoryLayout.scale(in: geo.size)
-            let wordScale: CGFloat = short ? 0.86 : (pad ? min(scale, 1.38) : 1)
+            let metrics = FactoryMetrics.make(geo)
             ZStack {
                 FactoryBackground()
 
-                VStack(spacing: short ? 10 : 12 + 8 * (scale - 1)) {
+                VStack(spacing: metrics.compact ? 10 : 14) {
                     HStack {
                         SettingsButton { router.showSettings = true }
                         Spacer()
@@ -32,43 +29,42 @@ struct HomeView: View {
                             store.setMusic(!store.save.musicEnabled)
                         }
                     }
-                    .padding(.horizontal, pad ? 28 : 18)
+                    .padding(.horizontal, 8)
 
-                    if pad {
-                        Color.clear.frame(height: 8)
-                    } else {
-                        Spacer(minLength: 4)
-                    }
-
-                    BrandWordmark(large: !short, scale: wordScale)
+                    BrandWordmark(
+                        large: !metrics.compact,
+                        scale: metrics.compact ? 0.82 : (metrics.pad ? min(metrics.scale, 1.28) : 1)
+                    )
 
                     Text(Brand.tagline)
-                        .font(GameFont.caption(short ? 13 : min(15 * scale, 20)))
+                        .font(GameFont.caption(metrics.type(15, cap: 22)))
                         .foregroundColor(GameTheme.navy.opacity(0.72))
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, pad ? 48 : 28)
+                        .padding(.horizontal, metrics.pad ? 48 : 28)
 
-                    chefStage(short: short, scale: scale)
-                        .frame(minHeight: short ? 168 : 220)
+                    chefStage(metrics: metrics)
+                        .frame(minHeight: metrics.compact ? 168 : 220)
                         .frame(maxHeight: .infinity)
 
-                    LearnIngredientsIngress(scale: scale, compact: short) {
+                    LearnIngredientsIngress(compact: metrics.compact) {
                         router.go(.ingredientSchool)
                     }
-                    .padding(.horizontal, pad ? 36 : 28)
+                    .padding(.horizontal, metrics.pad ? 28 : 22)
 
                     CrazyButton(title: "PLAY", icon: "play.fill") {
                         router.go(.foodSelection)
                     }
                     .factoryButtonWidth()
-                    .padding(.horizontal, pad ? 80 : 40)
-                    .padding(.bottom, geo.safeAreaInsets.bottom > 0 ? 10 : 16)
+                    .padding(.horizontal, metrics.pad ? 72 : 40)
                 }
                 .factoryLandingWidth()
-                .padding(.top, pad ? 12 : 8)
+                .padding(.top, metrics.chromeTop)
+                .padding(.bottom, metrics.chromeBottom)
+                .padding(.horizontal, 8)
                 .scaleEffect(appear ? 1 : 0.94)
                 .opacity(appear ? 1 : 0)
             }
+            .factoryMetrics(metrics)
         }
         .statusBarHidden(true)
         .onAppear {
@@ -83,32 +79,20 @@ struct HomeView: View {
         }
     }
 
-    private func chefStage(short: Bool, scale: CGFloat) -> some View {
-        GeometryReader { geo in
-            let cap: CGFloat = short ? 200 : 400
-            let chef = min(max(geo.size.height * 0.72, short ? 150 : 200 * scale * 0.92), cap)
-            let food = min(chef * 0.32, 110)
-            let spread = chef / 200
-            ZStack {
-                ChefCharacter(pose: .idle, size: chef, showsSpatula: true)
-                FoodIllustrationView(food: .pizza, size: food)
-                    .offset(x: -112 * spread, y: 44 * spread)
-                FoodIllustrationView(food: .dosa, size: food * 0.92)
-                    .offset(x: -110 * spread, y: 112 * spread)
-                FoodIllustrationView(food: .iceCream, size: food * 0.95)
-                    .offset(x: 114 * spread, y: 4 * spread)
-                FoodIllustrationView(food: .burrito, size: food * 0.88)
-                    .offset(x: 116 * spread, y: 108 * spread)
-            }
-            .frame(width: geo.size.width, height: geo.size.height)
-        }
+    private func chefStage(metrics: FactoryMetrics) -> some View {
+        ChefFoodStage(
+            pose: .idle,
+            foods: [.pizza, .iceCream, .dosa, .burrito],
+            chefSize: metrics.compact ? 168 : metrics.art(210, cap: 300),
+            foodSize: metrics.compact ? 62 : metrics.art(76, cap: 100)
+        )
     }
 }
 
 private struct LearnIngredientsIngress: View {
-    var scale: CGFloat
     var compact: Bool = false
     var action: () -> Void
+    @Environment(\.factoryMetrics) private var metrics
 
     private let teasers: [IngredientID] = [.tomato, .mango, .paneer, .chickpeas, .avocado, .rice]
     private let thumbs: [IngredientID] = [.tomato, .mango, .paneer, .chickpeas, .avocado]
@@ -127,18 +111,18 @@ private struct LearnIngredientsIngress: View {
             AudioManager.shared.tap()
             action()
         } label: {
-            VStack(alignment: .leading, spacing: compact ? 8 : 10 * max(scale, 1)) {
+            VStack(alignment: .leading, spacing: compact ? 8 : 10) {
                 HStack(spacing: 8) {
                     Image(systemName: "book.fill")
-                        .font(.system(size: 14 * scale, weight: .bold))
+                        .font(.system(size: metrics.type(14, cap: 18), weight: .bold))
                         .foregroundColor(Color(hex: 0xFF7A28))
                     Text("INGREDIENT SCHOOL")
-                        .font(GameFont.caption(min(12 * scale, 15)))
+                        .font(GameFont.caption(metrics.type(13, cap: 18)))
                         .foregroundColor(Color(hex: 0xFF7A28))
                         .tracking(0.6)
                     Spacer(minLength: 6)
                     Text("\(IngredientID.schoolRoster.count) foods")
-                        .font(GameFont.caption(min(12 * scale, 15)))
+                        .font(GameFont.caption(metrics.type(13, cap: 18)))
                         .foregroundColor(.white)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
@@ -148,16 +132,16 @@ private struct LearnIngredientsIngress: View {
                 HStack(alignment: .top, spacing: 12) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("What is \(id.displayName)?")
-                            .font(GameFont.headline(min(18 * scale, 24)))
+                            .font(GameFont.headline(metrics.type(18, cap: 28)))
                             .foregroundColor(GameTheme.navy)
                         Text(compact ? id.kidFactShort : id.kidFact)
-                            .font(GameFont.body(min(14 * scale, 18)))
+                            .font(GameFont.body(metrics.type(15, cap: 22)))
                             .foregroundColor(GameTheme.navy.opacity(0.78))
                             .lineLimit(compact ? 2 : 3)
                             .fixedSize(horizontal: false, vertical: true)
                         if compact == false {
                             Text(id.cookingUse)
-                                .font(GameFont.caption(min(13 * scale, 16)))
+                                .font(GameFont.caption(metrics.type(14, cap: 20)))
                                 .foregroundColor(Color(hex: 0xE85A12))
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -165,8 +149,8 @@ private struct LearnIngredientsIngress: View {
                     Spacer(minLength: 4)
                     IngredientArt(id: id)
                         .frame(
-                            width: compact ? 56 : min(72 * scale, 96),
-                            height: compact ? 56 : min(72 * scale, 96)
+                            width: compact ? 56 : metrics.art(72, cap: 96),
+                            height: compact ? 56 : metrics.art(72, cap: 96)
                         )
                         .padding(compact ? 6 : 10)
                         .background(
@@ -183,9 +167,9 @@ private struct LearnIngredientsIngress: View {
 
                 HStack(spacing: 8) {
                     HStack(spacing: -10) {
-                        ForEach(Array(thumbs.prefix(compact || scale < 1.25 ? 3 : 5)), id: \.self) { thumb in
+                        ForEach(Array(thumbs.prefix(compact || metrics.size.width < 520 ? 3 : 5)), id: \.self) { thumb in
                             IngredientArt(id: thumb)
-                                .frame(width: min(32 * scale, 42), height: min(32 * scale, 42))
+                                .frame(width: metrics.art(32, cap: 42), height: metrics.art(32, cap: 42))
                                 .padding(3)
                                 .background(Circle().fill(Color.white))
                                 .overlay(Circle().stroke(Color.white.opacity(0.9), lineWidth: 1.5))
@@ -194,13 +178,13 @@ private struct LearnIngredientsIngress: View {
                     Spacer(minLength: 8)
                     HStack(spacing: 6) {
                         Image(systemName: "speaker.wave.2.fill")
-                            .font(.system(size: 12 * scale, weight: .bold))
-                        Text(compact || scale < 1.25 ? "Hear it" : "Hear it • How chefs cook")
-                            .font(GameFont.headline(min(13 * scale, 16)))
+                            .font(.system(size: metrics.type(12, cap: 16), weight: .bold))
+                        Text(compact || metrics.size.width < 520 ? "Hear it" : "Hear it • How chefs cook")
+                            .font(GameFont.headline(metrics.type(14, cap: 18)))
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 13 * scale, weight: .heavy))
+                            .font(.system(size: metrics.type(13, cap: 16), weight: .heavy))
                     }
                     .foregroundColor(.white)
                     .padding(.horizontal, 12)

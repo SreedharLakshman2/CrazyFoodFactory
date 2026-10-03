@@ -13,40 +13,41 @@ struct GameplayView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let short = geo.size.height < 720
+            let metrics = FactoryMetrics.make(geo)
             ZStack {
                 FactoryBackground(compact: true)
 
-                VStack(spacing: short ? 12 : 16) {
+                VStack(spacing: metrics.compact ? 10 : 14) {
                     topBar
                     IngredientTray(
                         ingredients: game.definition.ingredients,
                         placed: game.placed,
-                        compact: short,
+                        compact: metrics.compact,
                         onTap: game.tapIngredient
                     )
                     if let text = game.lastLesson ?? game.speech, !text.isEmpty {
                         SpeechBubble(text: text, compact: true)
-                            .padding(.horizontal, 36)
+                            .padding(.horizontal, metrics.pad ? 48 : 36)
                             .animation(.spring(response: 0.42, dampingFraction: 0.7), value: text)
                     }
-                    Spacer(minLength: 10)
-                    workstation(short: short, width: geo.size.width)
-                    Spacer(minLength: 18)
+                    workstation(metrics: metrics)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .factoryReadableWidth()
-                .padding(.top, 10)
+                .padding(.top, metrics.chromeTop)
+                .padding(.bottom, metrics.chromeBottom)
+                .padding(.horizontal, 8)
                 .modifier(ShakeEffect(animatableData: game.shake))
 
                 if let flying = game.flying {
                     IngredientArt(id: flying)
-                        .frame(width: 56, height: 56)
+                        .frame(width: metrics.art(56, cap: 72), height: metrics.art(56, cap: 72))
                         .transition(.scale)
                 }
 
                 if let oops = game.oopsText, game.activeChaos == nil {
                     Text(oops)
-                        .font(GameFont.title(30))
+                        .font(GameFont.title(metrics.type(30, cap: 42)))
                         .foregroundColor(GameTheme.comicRed)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
@@ -74,6 +75,7 @@ struct GameplayView: View {
                     .transition(.scale.combined(with: .opacity))
                 }
             }
+            .factoryMetrics(metrics)
         }
         .statusBarHidden(true)
         .onChange(of: game.phase) { _, phase in
@@ -93,50 +95,51 @@ struct GameplayView: View {
             Spacer()
             ProgressStars(filled: game.starPreview)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 10)
     }
 
-    private func workstation(short: Bool, width: CGFloat) -> some View {
-        let foodSize: CGFloat = short ? 210 : 250
-        let chefSize: CGFloat = short ? 186 : 210
-        return ZStack(alignment: .bottom) {
-            FactoryTable()
-                .frame(width: min(width * 0.72, 320), height: short ? 78 : 88)
-                .offset(y: -4)
+    private func workstation(metrics: FactoryMetrics) -> some View {
+        GeometryReader { geo in
+            let foodSize = min(geo.size.height * 0.62, metrics.art(250, cap: metrics.compact ? 260 : 380))
+            let chefSize = min(geo.size.height * 0.56, metrics.art(210, cap: metrics.compact ? 220 : 320))
+            ZStack {
+                FactoryTable()
+                    .frame(width: min(geo.size.width * 0.62, metrics.pad ? 420 : 320), height: metrics.compact ? 78 : 96)
+                    .offset(y: -4)
 
-            FoodIllustrationView(
-                food: game.definition.type,
-                placed: game.placed,
-                melted: game.melted,
-                size: foodSize
-            )
-            .scaleEffect(game.foodBounce ? 1.08 : game.overlayScale)
-            .rotationEffect(.degrees(game.foodSpin ? 360 : 0))
-            .animation(GameAnimations.bounce, value: game.foodBounce)
-            .padding(.bottom, 36)
-            .overlay { SparkleEffect(tick: game.sparkleTick) }
+                FoodIllustrationView(
+                    food: game.definition.type,
+                    placed: game.placed,
+                    melted: game.melted,
+                    size: foodSize
+                )
+                .scaleEffect(game.foodBounce ? 1.08 : game.overlayScale)
+                .rotationEffect(.degrees(game.foodSpin ? 360 : 0))
+                .animation(GameAnimations.bounce, value: game.foodBounce)
+                .padding(.bottom, 36)
+                .overlay { SparkleEffect(tick: game.sparkleTick) }
 
-            ChefCharacter(pose: game.chefPose, size: chefSize)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 4)
-                .offset(y: 8)
+                ChefCharacter(pose: game.chefPose, size: chefSize)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 8)
+                    .offset(y: 8)
 
-            if game.definition.ovenIsTrap {
-                Button {
-                    game.tapOven()
-                } label: {
-                    OvenArt(glowing: game.ovenGlow, meltedInside: game.melted)
-                        .frame(width: short ? 96 : 108, height: short ? 96 : 108)
+                if game.definition.ovenIsTrap {
+                    Button {
+                        game.tapOven()
+                    } label: {
+                        OvenArt(glowing: game.ovenGlow, meltedInside: game.melted)
+                            .frame(width: metrics.art(108, cap: 140), height: metrics.art(108, cap: 140))
+                    }
+                    .buttonStyle(PressScaleStyle())
+                    .accessibilityLabel("Oven")
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.trailing, 8)
+                    .offset(y: 6)
                 }
-                .buttonStyle(PressScaleStyle())
-                .accessibilityLabel("Oven")
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.trailing, 8)
-                .offset(y: 6)
             }
+            .frame(width: geo.size.width, height: geo.size.height)
         }
-        .frame(height: short ? 300 : 348)
-        .frame(maxWidth: min(width, 540))
     }
 
     private func finishSuccess() {

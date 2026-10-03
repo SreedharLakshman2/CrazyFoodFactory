@@ -1,5 +1,44 @@
 import SwiftUI
 
+/// Chef in the middle with full food art around them — sized to the available
+/// frame so nothing is cropped on iPhone or iPad.
+struct ChefFoodStage: View {
+    var pose: ChefPose = .idle
+    var foods: [FoodType]
+    var chefSize: CGFloat
+    var foodSize: CGFloat
+    var showsSpatula: Bool = true
+
+    private let anchors: [CGPoint] = [
+        CGPoint(x: 0.16, y: 0.34),
+        CGPoint(x: 0.84, y: 0.28),
+        CGPoint(x: 0.14, y: 0.76),
+        CGPoint(x: 0.86, y: 0.74)
+    ]
+
+    var body: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            let height = geo.size.height
+            let snack = min(foodSize, max(36, min(width * 0.20, height * 0.28)))
+            let chef = min(chefSize, max(72, min(height * 0.68, width * 0.44)))
+            ZStack {
+                ChefCharacter(pose: pose, size: chef, showsSpatula: showsSpatula)
+                    .position(x: width * 0.5, y: height * 0.50)
+                ForEach(Array(foods.prefix(4).enumerated()), id: \.element) { index, food in
+                    let point = anchors[index % anchors.count]
+                    FoodIllustrationView(food: food, size: snack)
+                        .position(x: point.x * width, y: point.y * height)
+                        .accessibilityHidden(true)
+                }
+            }
+            .frame(width: width, height: height)
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .contain)
+    }
+}
+
 struct FoodIllustrationView: View {
     let food: FoodType
     var placed: [IngredientID] = []

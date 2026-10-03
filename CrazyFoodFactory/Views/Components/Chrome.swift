@@ -8,12 +8,13 @@ struct CrazyButton: View {
     var action: () -> Void
 
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.factoryMetrics) private var metrics
 
     enum Kind {
         case play, next, retry, home, danger
     }
 
-    private var pad: Bool { sizeClass == .regular }
+    private var pad: Bool { sizeClass == .regular || metrics.pad }
 
     var body: some View {
         Button(action: {
@@ -24,10 +25,10 @@ struct CrazyButton: View {
             HStack(spacing: pad ? 12 : 10) {
                 if let icon {
                     Image(systemName: icon)
-                        .font(.system(size: pad ? 26 : 22, weight: .heavy))
+                        .font(.system(size: metrics.type(22, cap: 28), weight: .heavy))
                 }
                 Text(title)
-                    .font(GameFont.title(kind == .play ? (pad ? 34 : 28) : (pad ? 26 : 22)))
+                    .font(GameFont.title(metrics.type(kind == .play ? 28 : 22, cap: kind == .play ? 38 : 30)))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
@@ -136,10 +137,11 @@ struct BackCircleButton: View {
 struct SpeechBubble: View {
     var text: String
     var compact: Bool = false
+    @Environment(\.factoryMetrics) private var metrics
 
     var body: some View {
         Text(text)
-            .font(GameFont.headline(compact ? 18 : 24))
+            .font(GameFont.headline(metrics.type(compact ? 18 : 24, cap: compact ? 28 : 34)))
             .foregroundStyle(
                 LinearGradient(
                     colors: [Color(hex: 0x16345C), Color(hex: 0x2A5A9A), Color(hex: 0xFF6A3C)],
@@ -149,7 +151,7 @@ struct SpeechBubble: View {
             )
             .multilineTextAlignment(.center)
             .padding(.horizontal, compact ? 18 : 24)
-            .padding(.vertical, compact ? 12 : 16)
+            .padding(.vertical, compact ? (metrics.pad ? 14 : 12) : (metrics.pad ? 18 : 16))
             .background(
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
                     .fill(
@@ -221,17 +223,18 @@ struct StarRating: View {
 
 struct ProgressStars: View {
     var filled: Int
+    @Environment(\.factoryMetrics) private var metrics
 
     var body: some View {
         HStack(spacing: 3) {
             ForEach(0..<3, id: \.self) { i in
                 Image(systemName: i < filled ? "star.fill" : "star")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: metrics.type(16, cap: 22), weight: .bold))
                     .foregroundColor(i < filled ? GameTheme.primaryYellow : Color.white.opacity(0.7))
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
+        .padding(.horizontal, metrics.pad ? 12 : 10)
+        .padding(.vertical, metrics.pad ? 9 : 7)
         .background(Capsule().fill(Color.white.opacity(0.22)))
         .accessibilityLabel("Progress \(filled) stars")
     }
@@ -242,6 +245,7 @@ struct FoodCard: View {
     var wide: Bool = false
     var artSize: CGFloat = 112
     var action: () -> Void
+    @Environment(\.factoryMetrics) private var metrics
 
     var body: some View {
         Button {
@@ -252,7 +256,7 @@ struct FoodCard: View {
             VStack(spacing: 10) {
                 FoodIllustrationView(food: food, size: artSize)
                 Text(food.displayName)
-                    .font(GameFont.headline(wide ? 20 : 17))
+                    .font(GameFont.headline(metrics.type(wide ? 20 : 17, cap: 26)))
                     .foregroundColor(GameTheme.navy)
             }
             .frame(maxWidth: .infinity)
@@ -277,19 +281,21 @@ struct IngredientCard: View {
     var used: Bool = false
     var compact: Bool = false
     var action: () -> Void
+    @Environment(\.factoryMetrics) private var metrics
 
     var body: some View {
+        let art = metrics.art(compact ? 58 : 64, cap: compact ? 72 : 84)
         Button(action: action) {
             VStack(spacing: 6) {
                 IngredientArt(id: ingredient.id)
-                    .frame(width: compact ? 58 : 64, height: compact ? 58 : 64)
+                    .frame(width: art, height: art)
                     .opacity(used ? 0.45 : 1)
                 Text(ingredient.displayName)
-                    .font(GameFont.caption(11))
+                    .font(GameFont.caption(metrics.type(13, cap: 18)))
                     .foregroundColor(GameTheme.navy)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .frame(width: compact ? 64 : 70)
+                    .minimumScaleFactor(0.85)
+                    .frame(width: art + 12)
             }
             .opacity(used && !ingredient.isOptional ? 0.7 : 1)
         }
@@ -374,12 +380,13 @@ struct LearnFactBanner: View {
 struct TitleChip: View {
     var food: FoodType
     var title: String
+    @Environment(\.factoryMetrics) private var metrics
 
     var body: some View {
         HStack(spacing: 8) {
-            FoodIllustrationView(food: food, size: 28)
+            FoodIllustrationView(food: food, size: metrics.art(28, cap: 40))
             Text(title)
-                .font(GameFont.headline(16))
+                .font(GameFont.headline(metrics.type(16, cap: 24)))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color(hex: 0x16345C), Color(hex: 0xFF7A28)],

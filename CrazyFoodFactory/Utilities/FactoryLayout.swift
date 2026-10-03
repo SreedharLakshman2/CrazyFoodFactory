@@ -42,6 +42,83 @@ enum FactoryLayout {
     }
 }
 
+struct FactoryMetrics: Equatable {
+    let size: CGSize
+    let safeTop: CGFloat
+    let safeBottom: CGFloat
+    let safeLeading: CGFloat
+    let safeTrailing: CGFloat
+
+    var pad: Bool { FactoryLayout.isRegular(size) }
+    var landscape: Bool { size.width > size.height + 40 }
+    var compact: Bool { size.height < 740 || landscape }
+
+    var scale: CGFloat { FactoryLayout.scale(in: size) }
+
+    /// iPad type stays larger in landscape because it uses the shorter side, not width.
+    var text: CGFloat {
+        if pad {
+            let shortSide = min(size.width, size.height)
+            return min(1.42, max(1.22, shortSide / 780))
+        }
+        return min(1.06, max(0.92, size.height / 852))
+    }
+
+    var chromeTop: CGFloat {
+        let base: CGFloat = pad ? (landscape ? 36 : 32) : 14
+        return max(safeTop, 0) + base
+    }
+
+    var chromeSide: CGFloat {
+        max(max(safeLeading, safeTrailing), 0) + (pad ? 20 : 12)
+    }
+
+    var chromeBottom: CGFloat {
+        max(safeBottom, 0) + (pad ? 14 : 8)
+    }
+
+    func type(_ base: CGFloat, cap: CGFloat? = nil) -> CGFloat {
+        let value = base * text
+        if let cap { return min(value, cap) }
+        return value
+    }
+
+    func art(_ base: CGFloat, cap: CGFloat? = nil) -> CGFloat {
+        let value = base * (pad ? min(scale, compact ? 1.15 : 1.35) : 1)
+        if let cap { return min(value, cap) }
+        return value
+    }
+
+    static func make(_ geo: GeometryProxy) -> FactoryMetrics {
+        FactoryMetrics(
+            size: geo.size,
+            safeTop: geo.safeAreaInsets.top,
+            safeBottom: geo.safeAreaInsets.bottom,
+            safeLeading: geo.safeAreaInsets.leading,
+            safeTrailing: geo.safeAreaInsets.trailing
+        )
+    }
+
+    static let phone = FactoryMetrics(
+        size: CGSize(width: 390, height: 844),
+        safeTop: 0,
+        safeBottom: 34,
+        safeLeading: 0,
+        safeTrailing: 0
+    )
+}
+
+private struct FactoryMetricsKey: EnvironmentKey {
+    static let defaultValue = FactoryMetrics.phone
+}
+
+extension EnvironmentValues {
+    var factoryMetrics: FactoryMetrics {
+        get { self[FactoryMetricsKey.self] }
+        set { self[FactoryMetricsKey.self] = newValue }
+    }
+}
+
 private struct FactoryReadableWidth: ViewModifier {
     @Environment(\.horizontalSizeClass) private var sizeClass
 
@@ -83,5 +160,9 @@ extension View {
 
     func factoryButtonWidth() -> some View {
         modifier(FactoryButtonWidth())
+    }
+
+    func factoryMetrics(_ metrics: FactoryMetrics) -> some View {
+        environment(\.factoryMetrics, metrics)
     }
 }

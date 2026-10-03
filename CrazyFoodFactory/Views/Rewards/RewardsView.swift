@@ -12,14 +12,16 @@ struct RewardsView: View {
     ]
 
     var body: some View {
-        ZStack {
+        GeometryReader { geo in
+            let metrics = FactoryMetrics.make(geo)
+            ZStack {
             FactoryBackground(compact: true)
             VStack(spacing: 12) {
                 HStack {
                     BackCircleButton { router.go(.home) }
                     Spacer()
                     Text("Rewards")
-                        .font(GameFont.title(28))
+                        .font(GameFont.title(metrics.type(28, cap: 38)))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Color(hex: 0xFF8A3D), Color(hex: 0xFF5A8A)],
@@ -33,7 +35,7 @@ struct RewardsView: View {
                 .padding(.horizontal, 16)
 
                 Text("Cook dishes and collect stars to unlock shareable chef cards.")
-                    .font(GameFont.caption(14))
+                    .font(GameFont.caption(metrics.type(14, cap: 20)))
                     .foregroundColor(GameTheme.navy.opacity(0.7))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 28)
@@ -49,7 +51,10 @@ struct RewardsView: View {
                 }
             }
             .factoryReadableWidth()
-            .padding(.top, 8)
+            .padding(.top, metrics.chromeTop)
+            .padding(.bottom, metrics.chromeBottom)
+        }
+        .factoryMetrics(metrics)
         }
         .statusBarHidden(true)
         .sheet(item: $shareItem) { item in

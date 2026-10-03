@@ -6,8 +6,7 @@ struct FoodSelectionView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let short = geo.size.height < 720
-            let pad = FactoryLayout.isRegular(geo.size)
+            let metrics = FactoryMetrics.make(geo)
             ZStack {
                 FactoryBackground(compact: true)
 
@@ -16,43 +15,45 @@ struct FoodSelectionView: View {
                         BackCircleButton { router.go(.home) }
                         Spacer()
                     }
-                    .padding(.horizontal, pad ? 24 : 18)
-                    .padding(.top, 8)
+                    .padding(.horizontal, 10)
 
                     SpeechBubble(text: "What do you want\nto make today?")
                         .padding(.top, 10)
-                        .padding(.bottom, short ? 10 : 16)
+                        .padding(.bottom, metrics.compact ? 10 : 16)
 
                     ScrollView(showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: pad ? 22 : 18) {
+                        VStack(alignment: .leading, spacing: metrics.pad ? 22 : 18) {
                             ForEach(FoodKitchen.allCases) { kitchen in
-                                kitchenSection(kitchen, short: short, pad: pad)
+                                kitchenSection(kitchen, metrics: metrics)
                             }
                         }
-                        .padding(.horizontal, pad ? 28 : 22)
+                        .padding(.horizontal, metrics.pad ? 28 : 22)
                         .padding(.bottom, 28)
                     }
                 }
                 .factoryReadableWidth()
+                .padding(.top, metrics.chromeTop)
+                .padding(.bottom, metrics.chromeBottom)
             }
+            .factoryMetrics(metrics)
         }
         .statusBarHidden(true)
     }
 
-    private func kitchenSection(_ kitchen: FoodKitchen, short: Bool, pad: Bool) -> some View {
+    private func kitchenSection(_ kitchen: FoodKitchen, metrics: FactoryMetrics) -> some View {
         let foods = FoodType.foods(in: kitchen)
         let columns = Array(
-            repeating: GridItem(.flexible(), spacing: pad ? 16 : 14),
-            count: pad ? 3 : 2
+            repeating: GridItem(.flexible(), spacing: metrics.pad ? 16 : 14),
+            count: metrics.pad && metrics.landscape == false ? 3 : 2
         )
         return VStack(alignment: .leading, spacing: 10) {
             Text(kitchen.title)
-                .font(GameFont.headline(pad ? 22 : 18))
+                .font(GameFont.headline(metrics.type(18, cap: 26)))
                 .foregroundColor(GameTheme.navy)
                 .padding(.leading, 4)
-            LazyVGrid(columns: columns, spacing: pad ? 16 : 14) {
+            LazyVGrid(columns: columns, spacing: metrics.pad ? 16 : 14) {
                 ForEach(foods) { food in
-                    foodButton(food, artSize: pad ? 120 : (short ? 86 : 98))
+                    foodButton(food, artSize: metrics.art(metrics.compact ? 86 : 98, cap: 128))
                 }
             }
         }

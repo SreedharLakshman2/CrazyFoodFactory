@@ -9,14 +9,16 @@ struct SettingsView: View {
     @State private var showSupport = false
 
     var body: some View {
-        ZStack {
+        GeometryReader { geo in
+            let metrics = FactoryMetrics.make(geo)
+            ZStack {
             FactoryBackground(compact: true)
             VStack(spacing: 14) {
                 HStack {
                     BackCircleButton { dismiss() }
                     Spacer()
                     Text("Settings")
-                        .font(GameFont.title(28))
+                        .font(GameFont.title(metrics.type(28, cap: 38)))
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [Color(hex: 0x16345C), Color(hex: 0x4EC3FF)],
@@ -131,7 +133,10 @@ struct SettingsView: View {
                 }
             }
             .factoryReadableWidth()
-            .padding(.top, 8)
+            .padding(.top, metrics.chromeTop)
+            .padding(.bottom, metrics.chromeBottom)
+        }
+        .factoryMetrics(metrics)
         }
         .alert("Reset all stars and levels?", isPresented: $confirmReset) {
             Button("Reset", role: .destructive) { store.resetProgress() }

@@ -6,7 +6,7 @@ struct LevelCompleteView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let short = geo.size.height < 720
+            let metrics = FactoryMetrics.make(geo)
             ZStack {
                 LinearGradient(
                     colors: [Color(hex: 0x7AD4FF), Color(hex: 0xFFE56A).opacity(0.55), Color(hex: 0xFFF4EC)],
@@ -15,19 +15,18 @@ struct LevelCompleteView: View {
                 )
                 .ignoresSafeArea()
 
-                VStack(spacing: short ? 14 : 20) {
+                VStack(spacing: metrics.compact ? 14 : 20) {
                     AnimatedTextBanner(
                         text: "LEVEL COMPLETE!",
                         colors: [Color(hex: 0xFFE56A), Color(hex: 0xFF9A3C)],
-                        size: short ? 28 : 32
+                        size: metrics.type(32, cap: 42)
                     )
-                    .padding(.top, 10)
                     .padding(.horizontal, 18)
 
                     StarRating(filled: max(store.save.stars(for: max(1, store.save.currentLevel - 1)), store.currentResult?.stars ?? 0), size: 42)
 
                     Text("You made:")
-                        .font(GameFont.headline(18))
+                        .font(GameFont.headline(metrics.type(18, cap: 24)))
                         .foregroundColor(GameTheme.navy.opacity(0.75))
 
                     foodRow
@@ -45,10 +44,12 @@ struct LevelCompleteView: View {
                     HomeCircleButton {
                         router.go(.home)
                     }
-                    .padding(.bottom, 12)
                 }
                 .factoryReadableWidth()
+                .padding(.top, metrics.chromeTop)
+                .padding(.bottom, metrics.chromeBottom)
             }
+            .factoryMetrics(metrics)
         }
         .statusBarHidden(true)
         .onAppear { AudioManager.shared.levelComplete() }

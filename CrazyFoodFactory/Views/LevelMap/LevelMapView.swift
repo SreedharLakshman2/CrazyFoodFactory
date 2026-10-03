@@ -6,11 +6,13 @@ struct LevelMapView: View {
 
     var body: some View {
         GeometryReader { geo in
+            let metrics = FactoryMetrics.make(geo)
             ZStack {
                 FactoryBackground()
 
                 VStack(spacing: 0) {
                     header
+                        .padding(.top, metrics.chromeTop)
                     ScrollView(showsIndicators: false) {
                         let mapSize = CGSize(
                             width: FactoryLayout.contentWidth(in: geo.size),
@@ -33,6 +35,7 @@ struct LevelMapView: View {
                     .factoryReadableWidth()
                 }
             }
+            .factoryMetrics(metrics)
         }
         .statusBarHidden(true)
     }
@@ -54,7 +57,6 @@ struct LevelMapView: View {
             .shadow(color: Color.black.opacity(0.08), radius: 6, y: 3)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 8)
         .factoryReadableWidth()
     }
 

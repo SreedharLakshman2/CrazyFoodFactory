@@ -2,46 +2,51 @@ import SwiftUI
 
 struct IngredientSchoolView: View {
     @EnvironmentObject private var router: AppRouter
-    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var selected: IngredientID?
     @State private var groupFilter: IngredientGroup?
 
     var body: some View {
         GeometryReader { geo in
-            let short = geo.size.height < 720
-            let pad = FactoryLayout.isRegular(geo.size)
+            let metrics = FactoryMetrics.make(geo)
             ZStack(alignment: .bottom) {
                 FactoryBackground(compact: true)
                 VStack(spacing: 0) {
-                    header
+                    header(metrics: metrics)
                     SpeechBubble(
                         text: "Tap a food. Learn what it is and how chefs use it!",
                         compact: true
                     )
-                    .padding(.horizontal, pad ? 40 : 28)
+                    .padding(.horizontal, metrics.pad ? 40 : 28)
                     .padding(.top, 8)
                     .padding(.bottom, 10)
 
-                    groupChips
+                    groupChips(metrics: metrics)
                         .padding(.bottom, 6)
 
                     ScrollView(showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 18) {
                             ForEach(visibleGroups) { group in
-                                section(group, compact: short, columns: pad ? 4 : 3)
+                                section(
+                                    group,
+                                    compact: metrics.compact,
+                                    columns: metrics.pad && metrics.landscape == false ? 4 : 3,
+                                    metrics: metrics
+                                )
                             }
                         }
-                        .padding(.horizontal, pad ? 24 : 18)
+                        .padding(.horizontal, metrics.pad ? 24 : 18)
                         .padding(.bottom, 28)
                     }
                     .scrollDisabled(selected != nil)
                 }
                 .factoryReadableWidth()
+                .padding(.top, metrics.chromeTop)
+                .padding(.bottom, selected == nil ? metrics.chromeBottom : 0)
 
                 if let selected {
                     IngredientLessonSheet(
                         id: selected,
-                        maxHeight: geo.size.height * (pad ? 0.88 : 0.78)
+                        maxHeight: geo.size.height * (metrics.pad ? 0.88 : 0.78)
                     ) {
                         closeLesson()
                     }
@@ -50,6 +55,7 @@ struct IngredientSchoolView: View {
                     .zIndex(1)
                 }
             }
+            .factoryMetrics(metrics)
             .animation(.spring(response: 0.42, dampingFraction: 0.86), value: selected)
         }
         .statusBarHidden(true)
@@ -71,7 +77,7 @@ struct IngredientSchoolView: View {
         selected = nil
     }
 
-    private var header: some View {
+    private func header(metrics: FactoryMetrics) -> some View {
         HStack {
             BackCircleButton {
                 closeLesson()
@@ -79,7 +85,7 @@ struct IngredientSchoolView: View {
             }
             Spacer()
             Text("Ingredient School")
-                .font(GameFont.title(sizeClass == .regular ? 32 : 26))
+                .font(GameFont.title(metrics.type(26, cap: 38)))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [Color(hex: 0x16345C), Color(hex: 0xFF7A28)],
@@ -91,17 +97,16 @@ struct IngredientSchoolView: View {
             Color.clear.frame(width: 60, height: 60)
         }
         .padding(.horizontal, 12)
-        .padding(.top, 8)
     }
 
-    private var groupChips: some View {
+    private func groupChips(metrics: FactoryMetrics) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                chip("All", tint: GameTheme.factoryBlue, selected: groupFilter == nil) {
+                chip("All", tint: GameTheme.factoryBlue, selected: groupFilter == nil, metrics: metrics) {
                     groupFilter = nil
                 }
                 ForEach(IngredientGroup.allCases) { group in
-                    chip(group.title, tint: group.tint, selected: groupFilter == group) {
+                    chip(group.title, tint: group.tint, selected: groupFilter == group, metrics: metrics) {
                         groupFilter = groupFilter == group ? nil : group
                     }
                 }
@@ -110,10 +115,10 @@ struct IngredientSchoolView: View {
         }
     }
 
-    private func chip(_ title: String, tint: Color, selected: Bool, action: @escaping () -> Void) -> some View {
+    private func chip(_ title: String, tint: Color, selected: Bool, metrics: FactoryMetrics, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(GameFont.caption(13))
+                .font(GameFont.caption(metrics.type(13, cap: 17)))
                 .foregroundColor(selected ? .white : GameTheme.navy)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
@@ -133,12 +138,12 @@ struct IngredientSchoolView: View {
         }
     }
 
-    private func section(_ group: IngredientGroup, compact: Bool, columns: Int = 3) -> some View {
+    private func section(_ group: IngredientGroup, compact: Bool, columns: Int = 3, metrics: FactoryMetrics) -> some View {
         let items = IngredientID.schoolRoster.filter { $0.schoolGroup == group }
         let grid = Array(repeating: GridItem(.flexible(), spacing: 10), count: columns)
         return VStack(alignment: .leading, spacing: 10) {
             Text(group.title)
-                .font(GameFont.headline(18))
+                .font(GameFont.headline(metrics.type(18, cap: 26)))
                 .foregroundColor(GameTheme.navy)
                 .padding(.leading, 4)
             LazyVGrid(columns: grid, spacing: 10) {

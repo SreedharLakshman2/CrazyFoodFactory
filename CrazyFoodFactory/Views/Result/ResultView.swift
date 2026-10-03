@@ -8,19 +8,18 @@ struct ResultView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let short = geo.size.height < 720
+            let metrics = FactoryMetrics.make(geo)
             ZStack {
                 FactoryBackground(celebrate: true)
                 ConfettiView()
-                VStack(spacing: short ? 14 : 20) {
+                VStack(spacing: metrics.compact ? 14 : 20) {
                     RibbonTitle(text: store.currentResult?.title ?? "Yummy!")
-                        .padding(.top, 16)
 
                     if let result = store.currentResult {
                         FoodIllustrationView(
                             food: result.food,
                             placed: result.placed,
-                            size: short ? 200 : 228,
+                            size: metrics.art(metrics.compact ? 200 : 228, cap: 300),
                             cuteFace: result.food == .burger
                         )
                         .bounceOn(true)
@@ -46,10 +45,12 @@ struct ResultView: View {
                     HomeCircleButton {
                         router.go(.home)
                     }
-                    .padding(.bottom, 12)
                 }
                 .factoryReadableWidth()
+                .padding(.top, metrics.chromeTop)
+                .padding(.bottom, metrics.chromeBottom)
             }
+            .factoryMetrics(metrics)
         }
         .statusBarHidden(true)
         .onAppear {
