@@ -5,6 +5,7 @@ struct CrazyButton: View {
     var icon: String? = nil
     var kind: Kind = .play
     var fillsWidth: Bool = true
+    var playsTap: Bool = true
     var action: () -> Void
 
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -18,7 +19,7 @@ struct CrazyButton: View {
 
     var body: some View {
         Button(action: {
-            AudioManager.shared.tap()
+            if playsTap { AudioManager.shared.tap() }
             Haptics.light()
             action()
         }) {

@@ -18,6 +18,14 @@ final class AudioManager: NSObject, ObservableObject {
     private var musicEnabled = true
     private var speechEnabled = true
     private var speaker: AVSpeechSynthesizer?
+    private var currentUtterance: AVSpeechUtterance?
+    private var lastSpokenText: String?
+    private var spokenUTF16Offset: Int = 0
+    private var speechIntent: SpeechIntent = .idle
+
+    private enum SpeechIntent {
+        case idle, speaking, pausing, paused, stopping
+    }
 
     private override init() {
         super.init()
@@ -88,51 +96,125 @@ final class AudioManager: NSObject, ObservableObject {
         speak("Let's make \(food.displayName)!")
     }
 
-    func speak(_ text: String) {
-        guard speechEnabled, !text.isEmpty else { return }
+    func speak(_ text: String, force: Bool = false) {
+        guard force || speechEnabled, !text.isEmpty else { return }
         configure()
-        let synth = speaker ?? AVSpeechSynthesizer()
-        synth.delegate = self
-        speaker = synth
-        synth.stopSpeaking(at: .immediate)
-        isPaused = false
-        isSpeaking = true
+        let synth = preparedSpeaker()
+        lastSpokenText = text
+        spokenUTF16Offset = 0
+        let utterance = makeUtterance(text)
+        currentUtterance = utterance
+        speechIntent = .speaking
+        publish(speaking: true, paused: false)
+
+        if synth.isSpeaking || synth.isPaused {
+            synth.stopSpeaking(at: .immediate)
+            Task { @MainActor in
+                guard currentUtterance === utterance else { return }
+                preparedSpeaker().speak(utterance)
+            }
+        } else {
+            preparedSpeaker().speak(utterance)
+        }
+    }
+
+    func toggleSpeech(_ text: String) {
+        if speaker?.isPaused == true || speechIntent == .paused || speechIntent == .pausing || isPaused {
+            resumeSpeech()
+        } else if speaker?.isSpeaking == true || speechIntent == .speaking || isSpeaking {
+            pauseSpeech()
+        } else {
+            speak(text, force: true)
+        }
+    }
+
+    func pauseSpeech() {
+        guard let synth = speaker else {
+            publish(speaking: false, paused: false)
+            speechIntent = .idle
+            return
+        }
+        if synth.isPaused || speechIntent == .paused {
+            speechIntent = .paused
+            publish(speaking: true, paused: true)
+            return
+        }
+        guard synth.isSpeaking || speechIntent == .speaking || isSpeaking else {
+            publish(speaking: false, paused: false)
+            speechIntent = .idle
+            return
+        }
+        speechIntent = .pausing
+        _ = synth.pauseSpeaking(at: .immediate)
+        speechIntent = synth.isPaused || speechIntent == .pausing ? .paused : speechIntent
+        publish(speaking: true, paused: true)
+    }
+
+    func resumeSpeech() {
+        speechIntent = .speaking
+        if let synth = speaker, synth.isPaused {
+            synth.continueSpeaking()
+            publish(speaking: true, paused: false)
+            return
+        }
+        if speaker?.isSpeaking != true, let remaining = remainingSpeechText() {
+            speak(remaining, force: true)
+            return
+        }
+        if speaker?.isSpeaking == true {
+            publish(speaking: true, paused: false)
+            return
+        }
+        publish(speaking: false, paused: false)
+        speechIntent = .idle
+    }
+
+    func stopSpeech() {
+        speechIntent = .stopping
+        currentUtterance = nil
+        lastSpokenText = nil
+        spokenUTF16Offset = 0
+        speaker?.stopSpeaking(at: .immediate)
+        publish(speaking: false, paused: false)
+        speechIntent = .idle
+    }
+
+    private func makeUtterance(_ text: String) -> AVSpeechUtterance {
         let utterance = AVSpeechUtterance(string: text)
         utterance.rate = 0.48
         utterance.pitchMultiplier = 1.18
         utterance.volume = 1
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
             ?? AVSpeechSynthesisVoice(language: "en-GB")
-        synth.speak(utterance)
+        return utterance
     }
 
-    func toggleSpeech(_ text: String) {
-        if isPaused {
-            resumeSpeech()
-        } else if isSpeaking {
-            pauseSpeech()
-        } else {
-            speak(text)
-        }
+    private func publish(speaking: Bool, paused: Bool) {
+        isSpeaking = speaking
+        isPaused = paused
     }
 
-    func pauseSpeech() {
-        guard isSpeaking, !isPaused else { return }
-        speaker?.pauseSpeaking(at: .word)
-        isPaused = true
+    private func remainingSpeechText() -> String? {
+        guard let text = lastSpokenText, !text.isEmpty else { return nil }
+        let nsText = text as NSString
+        let offset = min(max(spokenUTF16Offset, 0), nsText.length)
+        if offset <= 0 { return text }
+        let remaining = nsText.substring(from: offset)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return remaining.isEmpty ? text : remaining
     }
 
-    func resumeSpeech() {
-        guard isPaused else { return }
-        speaker?.continueSpeaking()
-        isPaused = false
-        isSpeaking = true
+    private func applyDelegate(for utterance: AVSpeechUtterance, _ update: () -> Void) {
+        guard utterance === currentUtterance else { return }
+        update()
     }
 
-    func stopSpeech() {
-        speaker?.stopSpeaking(at: .immediate)
-        isSpeaking = false
-        isPaused = false
+    private func preparedSpeaker() -> AVSpeechSynthesizer {
+        if let speaker { return speaker }
+        let synth = AVSpeechSynthesizer()
+        synth.delegate = self
+        speaker = synth
+        return synth
     }
 
     func startMusic() {
@@ -248,35 +330,64 @@ final class AudioManager: NSObject, ObservableObject {
 extension AudioManager: AVSpeechSynthesizerDelegate {
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
         Task { @MainActor in
-            isSpeaking = true
-            isPaused = false
+            applyDelegate(for: utterance) {
+                speechIntent = .speaking
+                publish(speaking: true, paused: false)
+            }
         }
     }
 
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         Task { @MainActor in
-            isSpeaking = false
-            isPaused = false
+            applyDelegate(for: utterance) {
+                currentUtterance = nil
+                speechIntent = .idle
+                publish(speaking: false, paused: false)
+            }
         }
     }
 
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didPause utterance: AVSpeechUtterance) {
         Task { @MainActor in
-            isPaused = true
+            applyDelegate(for: utterance) {
+                speechIntent = .paused
+                publish(speaking: true, paused: true)
+            }
         }
     }
 
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didContinue utterance: AVSpeechUtterance) {
         Task { @MainActor in
-            isSpeaking = true
-            isPaused = false
+            applyDelegate(for: utterance) {
+                speechIntent = .speaking
+                publish(speaking: true, paused: false)
+            }
+        }
+    }
+
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, willSpeakRangeOfSpeechString characterRange: NSRange, utterance: AVSpeechUtterance) {
+        Task { @MainActor in
+            applyDelegate(for: utterance) {
+                spokenUTF16Offset = characterRange.location
+            }
         }
     }
 
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
         Task { @MainActor in
-            isSpeaking = false
-            isPaused = false
+            applyDelegate(for: utterance) {
+                if speechIntent == .pausing || speechIntent == .paused {
+                    speechIntent = .paused
+                    publish(speaking: true, paused: true)
+                    return
+                }
+                if speechIntent == .speaking {
+                    return
+                }
+                currentUtterance = nil
+                speechIntent = .idle
+                publish(speaking: false, paused: false)
+            }
         }
     }
 }

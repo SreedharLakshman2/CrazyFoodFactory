@@ -50,6 +50,7 @@ struct IngredientSchoolView: View {
                     ) {
                         closeLesson()
                     }
+                    .id(selected)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .zIndex(1)
@@ -194,12 +195,9 @@ struct IngredientLessonSheet: View {
                     .onTapGesture { onClose() }
                     .accessibilityLabel("Close lesson")
 
-                ViewThatFits(in: .vertical) {
-                    sheetPanel(metrics: metrics, scrolling: false)
-                    sheetPanel(metrics: metrics, scrolling: true)
-                        .frame(maxHeight: maxHeight)
-                }
-                .frame(width: metrics.panelWidth)
+                sheetStack(metrics: metrics)
+                    .frame(width: metrics.panelWidth)
+                    .frame(maxHeight: maxHeight, alignment: .bottom)
                 .background(
                     UnevenRoundedRectangle(
                         topLeadingRadius: metrics.pad ? 44 : 36,
@@ -243,8 +241,7 @@ struct IngredientLessonSheet: View {
         }
     }
 
-    @ViewBuilder
-    private func sheetPanel(metrics: LessonMetrics, scrolling: Bool) -> some View {
+    private func sheetStack(metrics: LessonMetrics) -> some View {
         VStack(spacing: 0) {
             Capsule()
                 .fill(Color(hex: 0x16345C).opacity(0.22))
@@ -255,24 +252,26 @@ struct IngredientLessonSheet: View {
                 .contentShape(Rectangle())
                 .gesture(dismissDrag)
 
-            if scrolling {
+            ViewThatFits(in: .vertical) {
+                lessonBody(metrics: metrics)
                 ScrollView(showsIndicators: false) {
                     lessonBody(metrics: metrics)
                 }
-            } else {
-                lessonBody(metrics: metrics)
             }
 
             CrazyButton(
                 title: hearTitle,
                 icon: hearIcon,
-                kind: audio.isSpeaking && !audio.isPaused ? .home : .play
+                kind: audio.isSpeaking && !audio.isPaused ? .home : .play,
+                playsTap: false
             ) {
                 audio.toggleSpeech(id.schoolLesson)
             }
+            .animation(nil, value: hearTitle)
             .factoryButtonWidth()
             .padding(.horizontal, metrics.pad ? 40 : 28)
             .padding(.top, 10)
+            .accessibilityHint("Hear the lesson, then pause or resume.")
 
             Button("Close") { onClose() }
                 .font(GameFont.headline(metrics.close))
